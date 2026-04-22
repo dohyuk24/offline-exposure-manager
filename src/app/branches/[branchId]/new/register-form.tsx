@@ -15,15 +15,24 @@ import {
 
 type RegisterFormProps = {
   branch: Branch;
+  initialValues?: Partial<MediaFormValues>;
+  /** 기존 레코드 히스토리 이어가기일 때 부모 location_key */
+  locationKey?: string;
 };
 
 /**
  * MediaForm 을 Server Action 에 연결하는 클라이언트 래퍼.
  * useTransition 으로 pending 상태 관리 + 에러 노출.
  */
-export function RegisterForm({ branch }: RegisterFormProps) {
+export function RegisterForm({
+  branch,
+  initialValues,
+  locationKey,
+}: RegisterFormProps) {
   const [isPending, startTransition] = useTransition();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const isContinuation = Boolean(locationKey);
 
   function handleSubmit(values: MediaFormValues) {
     setErrorMessage(null);
@@ -41,13 +50,13 @@ export function RegisterForm({ branch }: RegisterFormProps) {
       cost: values.cost,
       barter_condition: values.barter_condition,
       is_new_discovery: values.is_new_discovery,
+      locationKey,
     };
 
     startTransition(async () => {
       try {
         await registerMediaAction(payload);
       } catch (err) {
-        // NEXT_REDIRECT 는 정상 흐름. 그 외만 표면화.
         if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) {
           return;
         }
@@ -61,6 +70,9 @@ export function RegisterForm({ branch }: RegisterFormProps) {
       onSubmit={handleSubmit}
       submitting={isPending}
       errorMessage={errorMessage}
+      initialValues={initialValues}
+      submitLabel={isContinuation ? "이어서 기록하기" : "등록하기"}
+      hideDiscoveryToggle={isContinuation}
     />
   );
 }

@@ -28,3 +28,26 @@ export async function getMediaRecord(id: string): Promise<MediaRecord | null> {
   if (error) throw error;
   return data as MediaRecord | null;
 }
+
+/**
+ * 같은 location_key 를 공유하는 레코드 히스토리.
+ * 최신순 정렬. `excludeId` 지정 시 해당 레코드는 제외.
+ */
+export async function listMediaHistory(
+  locationKey: string,
+  excludeId?: string
+): Promise<MediaRecord[]> {
+  const supabase = await createServerSupabase();
+  let query = supabase
+    .from("media_records")
+    .select("*")
+    .eq("location_key", locationKey)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false });
+
+  if (excludeId) query = query.neq("id", excludeId);
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data ?? []) as MediaRecord[];
+}

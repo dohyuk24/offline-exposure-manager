@@ -90,6 +90,7 @@ export type MediaRecord = {
   zone_id: string | null;
   is_new_discovery: boolean;
   photos: string[];
+  location_key: string;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
