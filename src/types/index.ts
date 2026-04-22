@@ -64,7 +64,6 @@ export type Branch = {
   id: string;
   name: string;
   slug: string;
-  token: string;
   budget_monthly: number;
   slack_channel: string | null;
   is_active: boolean;

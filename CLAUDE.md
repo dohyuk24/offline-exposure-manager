@@ -99,11 +99,11 @@ src/
 
 ```sql
 -- 지점
+-- 인증: 지점 담당자 전용 URL을 쓰지 않고 Supabase Auth 계정 기반으로 권한을 관리한다.
 create table branches (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   slug text unique not null,        -- URL용 (yeoksam-arc)
-  token text unique not null,       -- 지점 담당자 인증 토큰
   budget_monthly integer default 500000,
   slack_channel text,               -- Slack 채널 ID
   is_active boolean default true,
