@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import type { Branch, MediaRecord, ScoreLog } from "@/types";
@@ -13,9 +14,11 @@ import { MediaGrid } from "@/components/media/media-grid";
 import { BudgetWidget } from "@/components/budget/budget-widget";
 import { ScoreWidget } from "@/components/score/score-widget";
 import { ConnectionError } from "@/components/ui/connection-error";
+import { MicroFeedback } from "@/components/ui/micro-feedback";
 
 type BranchPageProps = {
   params: Promise<{ branchId: string }>;
+  searchParams: Promise<{ feedback?: string }>;
 };
 
 type BranchData = {
@@ -40,8 +43,12 @@ async function loadBranchData(slug: string): Promise<BranchData | null> {
   return { branch, records, budgetUsed, scoreLogs, yearMonth };
 }
 
-export default async function BranchPage({ params }: BranchPageProps) {
+export default async function BranchPage({
+  params,
+  searchParams,
+}: BranchPageProps) {
   const { branchId } = await params;
+  const { feedback } = await searchParams;
 
   let data: BranchData | null = null;
   let connectionError: string | null = null;
@@ -81,14 +88,22 @@ export default async function BranchPage({ params }: BranchPageProps) {
 
   return (
     <div className="space-y-8">
-      <header>
-        <p className="text-xs uppercase tracking-wider text-[var(--color-text-tertiary)]">
-          지점
-        </p>
-        <h1 className="text-[20px] font-semibold">{branch.name}</h1>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-          {yearMonth} 기준 현황
-        </p>
+      <header className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs uppercase tracking-wider text-[var(--color-text-tertiary)]">
+            지점
+          </p>
+          <h1 className="text-[20px] font-semibold">{branch.name}</h1>
+          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+            {yearMonth} 기준 현황
+          </p>
+        </div>
+        <Link
+          href={`/branches/${branch.slug}/new`}
+          className="shrink-0 rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+        >
+          + 매체 등록
+        </Link>
       </header>
 
       <Section title="공식매체 (OOH)">
@@ -117,6 +132,8 @@ export default async function BranchPage({ params }: BranchPageProps) {
           barterInProgress={summary.barterInProgress}
         />
       </Section>
+
+      {feedback ? <MicroFeedback key={feedback} message={feedback} /> : null}
     </div>
   );
 }
@@ -154,7 +171,7 @@ function summarizeScore(logs: ScoreLog[]): {
     else if (log.action === SCORE_ACTION.BARTER_SUCCESS) barterSuccessCount += 1;
   }
 
-  void SCORE_CONFIG; // 추후 점수 가중치 연동 시 사용
+  void SCORE_CONFIG;
   return {
     total,
     updateCount,
