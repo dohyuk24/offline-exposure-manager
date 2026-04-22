@@ -12,7 +12,7 @@ import {
   type ContentType,
 } from "@/types";
 
-type MediaFormValues = {
+export type MediaFormValues = {
   category: MediaCategory;
   media_type: MediaType;
   status: MediaStatus;
@@ -23,6 +23,7 @@ type MediaFormValues = {
   end_date: string;
   cost: string;
   barter_condition: string;
+  is_new_discovery: boolean;
 };
 
 const INITIAL: MediaFormValues = {
@@ -36,18 +37,24 @@ const INITIAL: MediaFormValues = {
   end_date: "",
   cost: "",
   barter_condition: "",
+  is_new_discovery: false,
 };
 
 type MediaFormProps = {
   onSubmit?: (values: MediaFormValues) => void | Promise<void>;
   submitting?: boolean;
+  errorMessage?: string | null;
 };
 
 /**
  * 매체 등록/수정 폼 — DESIGN.md 섹션 7.
  * 사진 업로드·GPS 자동 수집은 v1 후속 브랜치에서 구현.
  */
-export function MediaForm({ onSubmit, submitting }: MediaFormProps) {
+export function MediaForm({
+  onSubmit,
+  submitting,
+  errorMessage,
+}: MediaFormProps) {
   const [values, setValues] = useState<MediaFormValues>(INITIAL);
 
   const update = <K extends keyof MediaFormValues>(
@@ -150,6 +157,27 @@ export function MediaForm({ onSubmit, submitting }: MediaFormProps) {
             placeholder="상호 제공 조건"
           />
         </Row>
+      ) : null}
+
+      <label className="flex items-center gap-2 rounded-md border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-3 text-sm">
+        <input
+          type="checkbox"
+          checked={values.is_new_discovery}
+          onChange={(e) => update("is_new_discovery", e.target.checked)}
+          className="h-4 w-4"
+        />
+        <span>
+          <span className="font-medium">✨ 신규 발굴</span>
+          <span className="ml-2 text-[var(--color-text-tertiary)]">
+            새 위치·채널에서 처음 확보한 매체
+          </span>
+        </span>
+      </label>
+
+      {errorMessage ? (
+        <p className="rounded-md border border-[#C4332F]/40 bg-[#FFE2DD]/40 px-3 py-2 text-sm text-[#C4332F]">
+          {errorMessage}
+        </p>
       ) : null}
 
       <button
