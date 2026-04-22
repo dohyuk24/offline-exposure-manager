@@ -8,7 +8,6 @@ create table if not exists branches (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   slug text unique not null,
-  token text unique not null,
   budget_monthly integer default 500000,
   slack_channel text,
   is_active boolean default true,
@@ -16,7 +15,6 @@ create table if not exists branches (
 );
 
 create index if not exists branches_slug_idx on branches(slug);
-create index if not exists branches_token_idx on branches(token);
 
 -- ============================================================
 -- 매체 레코드

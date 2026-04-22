@@ -16,21 +16,21 @@ truncate table branches restart identity cascade;
 -- 1) 지점 (14개 — PRD 초기 기준)
 -- ============================================================
 
-insert into branches (name, slug, token, budget_monthly, slack_channel) values
-  ('역삼ARC',      'yeoksam-arc',    'token-yeoksam-arc',    500000, 'C_YEOKSAM_ARC'),
-  ('도곡',         'dogok',          'token-dogok',          500000, 'C_DOGOK'),
-  ('신도림',       'sindorim',       'token-sindorim',       500000, 'C_SINDORIM'),
-  ('논현',         'nonhyeon',       'token-nonhyeon',       500000, 'C_NONHYEON'),
-  ('판교',         'pangyo',         'token-pangyo',         500000, 'C_PANGYO'),
-  ('강변',         'gangbyeon',      'token-gangbyeon',      500000, 'C_GANGBYEON'),
-  ('가산',         'gasan',          'token-gasan',          500000, 'C_GASAN'),
-  ('삼성',         'samsung',        'token-samsung',        500000, 'C_SAMSUNG'),
-  ('광화문',       'gwanghwamun',    'token-gwanghwamun',    500000, 'C_GWANGHWAMUN'),
-  ('한티',         'hanti',          'token-hanti',          500000, 'C_HANTI'),
-  ('마곡',         'magok',          'token-magok',          500000, 'C_MAGOK'),
-  ('판교벤처타운', 'pangyo-venture', 'token-pangyo-venture', 500000, 'C_PANGYO_VENTURE'),
-  ('역삼GFC',      'yeoksam-gfc',    'token-yeoksam-gfc',    500000, 'C_YEOKSAM_GFC'),
-  ('합정',         'hapjeong',       'token-hapjeong',       500000, 'C_HAPJEONG');
+insert into branches (name, slug, budget_monthly, slack_channel) values
+  ('역삼ARC',      'yeoksam-arc',    500000, 'C_YEOKSAM_ARC'),
+  ('도곡',         'dogok',          500000, 'C_DOGOK'),
+  ('신도림',       'sindorim',       500000, 'C_SINDORIM'),
+  ('논현',         'nonhyeon',       500000, 'C_NONHYEON'),
+  ('판교',         'pangyo',         500000, 'C_PANGYO'),
+  ('강변',         'gangbyeon',      500000, 'C_GANGBYEON'),
+  ('가산',         'gasan',          500000, 'C_GASAN'),
+  ('삼성',         'samsung',        500000, 'C_SAMSUNG'),
+  ('광화문',       'gwanghwamun',    500000, 'C_GWANGHWAMUN'),
+  ('한티',         'hanti',          500000, 'C_HANTI'),
+  ('마곡',         'magok',          500000, 'C_MAGOK'),
+  ('판교벤처타운', 'pangyo-venture', 500000, 'C_PANGYO_VENTURE'),
+  ('역삼GFC',      'yeoksam-gfc',    500000, 'C_YEOKSAM_GFC'),
+  ('합정',         'hapjeong',       500000, 'C_HAPJEONG');
 
 -- ============================================================
 -- 2) 매체 레코드 (지점별 4건 × 14지점 = 56건)
