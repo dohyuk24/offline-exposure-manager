@@ -12,6 +12,8 @@ import {
   type ContentType,
 } from "@/types";
 
+import { PhotoUploader } from "./photo-uploader";
+
 export type MediaFormValues = {
   category: MediaCategory;
   media_type: MediaType;
@@ -24,6 +26,7 @@ export type MediaFormValues = {
   cost: string;
   barter_condition: string;
   is_new_discovery: boolean;
+  photos: string[];
 };
 
 const INITIAL: MediaFormValues = {
@@ -38,6 +41,7 @@ const INITIAL: MediaFormValues = {
   cost: "",
   barter_condition: "",
   is_new_discovery: false,
+  photos: [],
 };
 
 type MediaFormProps = {
@@ -48,11 +52,12 @@ type MediaFormProps = {
   submitLabel?: string;
   /** 기존 히스토리 이어서 기록 모드 — 신규 발굴 체크박스 숨김 */
   hideDiscoveryToggle?: boolean;
+  /** 사진 업로드 시 Storage path prefix 로 사용 (지점 slug) */
+  branchSlug: string;
 };
 
 /**
  * 매체 등록/수정 폼 — DESIGN.md 섹션 7.
- * 사진 업로드·GPS 자동 수집은 v1 후속 브랜치에서 구현.
  */
 export function MediaForm({
   onSubmit,
@@ -61,10 +66,12 @@ export function MediaForm({
   initialValues,
   submitLabel = "등록하기",
   hideDiscoveryToggle = false,
+  branchSlug,
 }: MediaFormProps) {
   const [values, setValues] = useState<MediaFormValues>({
     ...INITIAL,
     ...initialValues,
+    photos: initialValues?.photos ?? [],
   });
 
   const update = <K extends keyof MediaFormValues>(
@@ -81,9 +88,12 @@ export function MediaForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="aspect-video w-full rounded-lg border border-dashed border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-6 text-center text-sm text-[var(--color-text-tertiary)]">
-        📷 사진 업로드 영역 (다음 브랜치에서 구현)
-      </div>
+      <PhotoUploader
+        value={values.photos}
+        onChange={(next) => update("photos", next)}
+        branchSlug={branchSlug}
+        disabled={submitting}
+      />
 
       <Row label="구분">
         <Select

@@ -35,6 +35,7 @@ export function EditForm({ branch, record }: EditFormProps) {
         : "",
     barter_condition: record.barter_condition ?? "",
     is_new_discovery: record.is_new_discovery,
+    photos: record.photos ?? [],
   };
 
   function handleSubmit(values: MediaFormValues) {
@@ -74,6 +75,7 @@ export function EditForm({ branch, record }: EditFormProps) {
   return (
     <div className="space-y-4">
       <MediaForm
+        branchSlug={branch.slug}
         onSubmit={handleSubmit}
         submitting={isPending}
         errorMessage={errorMessage}

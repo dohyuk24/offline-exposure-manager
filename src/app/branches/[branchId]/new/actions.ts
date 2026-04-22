@@ -32,6 +32,7 @@ export type RegisterMediaPayload = {
   cost: string;
   barter_condition: string;
   is_new_discovery: boolean;
+  photos: string[];
   /** 기존 레코드 히스토리 이어가기 시 부모 location_key */
   locationKey?: string;
 };
@@ -81,6 +82,7 @@ export async function registerMediaAction(
     cost: costNum > 0 ? costNum : null,
     barter_condition: payload.barter_condition || null,
     is_new_discovery: isNewDiscovery,
+    photos: payload.photos ?? [],
   };
   // 히스토리 이어가기면 부모 location_key 를 그대로 상속.
   // 신규 레코드면 생략 → DB default (gen_random_uuid) 가 독립 키를 부여.

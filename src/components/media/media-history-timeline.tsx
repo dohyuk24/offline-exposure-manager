@@ -49,6 +49,19 @@ export function MediaHistoryTimeline({ records }: MediaHistoryTimelineProps) {
               ? ` · 💰 ${Math.round(record.cost / 10000)}만원`
               : ""}
           </p>
+          {record.photos?.length > 0 ? (
+            <div className="mt-2 flex gap-1.5 overflow-x-auto">
+              {record.photos.map((url) => (
+                <div
+                  key={url}
+                  className="h-14 w-14 shrink-0 overflow-hidden rounded border border-[var(--color-border)] bg-[var(--color-bg-secondary)]"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="" className="h-full w-full object-cover" />
+                </div>
+              ))}
+            </div>
+          ) : null}
         </li>
       ))}
     </ol>
