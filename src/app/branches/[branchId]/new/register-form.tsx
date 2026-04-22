@@ -50,6 +50,7 @@ export function RegisterForm({
       cost: values.cost,
       barter_condition: values.barter_condition,
       is_new_discovery: values.is_new_discovery,
+      photos: values.photos,
       locationKey,
     };
 
@@ -67,6 +68,7 @@ export function RegisterForm({
 
   return (
     <MediaForm
+      branchSlug={branch.slug}
       onSubmit={handleSubmit}
       submitting={isPending}
       errorMessage={errorMessage}

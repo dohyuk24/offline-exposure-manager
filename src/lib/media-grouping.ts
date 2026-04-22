@@ -5,14 +5,23 @@ import type { MediaRecord } from "@/types";
  * 지점 페이지 카드 그리드에서 중복 노출을 방지하기 위함.
  * 정렬은 최신 updated_at 내림차순.
  */
+/**
+ * location_key 가 비어있는 레코드는 각자 독립된 것으로 취급 (id 기준).
+ * 마이그레이션 0003 미적용 시 안전 장치.
+ */
+function keyOf(record: MediaRecord): string {
+  return record.location_key || record.id;
+}
+
 export function groupByLocationLatest(
   records: MediaRecord[]
 ): MediaRecord[] {
   const byKey = new Map<string, MediaRecord>();
   for (const r of records) {
-    const existing = byKey.get(r.location_key);
+    const k = keyOf(r);
+    const existing = byKey.get(k);
     if (!existing || r.created_at > existing.created_at) {
-      byKey.set(r.location_key, r);
+      byKey.set(k, r);
     }
   }
   return Array.from(byKey.values()).sort((a, b) =>
@@ -28,7 +37,8 @@ export function countByLocation(
 ): Map<string, number> {
   const map = new Map<string, number>();
   for (const r of records) {
-    map.set(r.location_key, (map.get(r.location_key) ?? 0) + 1);
+    const k = keyOf(r);
+    map.set(k, (map.get(k) ?? 0) + 1);
   }
   return map;
 }

@@ -22,6 +22,7 @@ export type UpdateMediaPayload = {
   cost: string;
   barter_condition: string;
   is_new_discovery: boolean;
+  photos: string[];
 };
 
 /**
@@ -59,6 +60,7 @@ export async function updateMediaAction(
       cost: costNum > 0 ? costNum : null,
       barter_condition: payload.barter_condition || null,
       is_new_discovery: payload.is_new_discovery,
+      photos: payload.photos ?? [],
     })
     .eq("id", payload.recordId)
     .eq("branch_id", branch.id);

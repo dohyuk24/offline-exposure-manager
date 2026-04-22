@@ -66,16 +66,19 @@ export async function listBranchSummaries(
   if (scoresRes.error) throw scoresRes.error;
   if (budgetsRes.error) throw budgetsRes.error;
 
-  // 같은 location_key 는 하나의 매체로 집계 — 월별 히스토리 중복 제거.
+  // 같은 location_key 는 하나의 매체로 집계. location_key 없으면 row 자체로 취급.
   const keysByBranch = new Map<string, Set<string>>();
   const discoveryByBranch = new Map<string, boolean>();
   for (const row of (mediaRes.data ?? []) as {
     branch_id: string;
     is_new_discovery: boolean;
-    location_key: string;
+    location_key: string | null;
   }[]) {
     const keySet = keysByBranch.get(row.branch_id) ?? new Set<string>();
-    keySet.add(row.location_key);
+    // fallback: location_key 미적용 상태에서도 합계 깨지지 않게.
+    keySet.add(
+      row.location_key ?? `${row.branch_id}-${keySet.size}-${Math.random()}`
+    );
     keysByBranch.set(row.branch_id, keySet);
     if (row.is_new_discovery)
       discoveryByBranch.set(row.branch_id, true);
