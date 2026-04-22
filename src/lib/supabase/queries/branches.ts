@@ -24,3 +24,89 @@ export async function listActiveBranches(): Promise<Branch[]> {
   if (error) throw error;
   return (data ?? []) as Branch[];
 }
+
+export type BranchSummary = Branch & {
+  mediaCount: number;
+  monthlyScore: number;
+  monthlyBudgetUsed: number;
+  hasDiscovery: boolean;
+};
+
+/**
+ * 전 지점 요약 — index 페이지 · 홈 · 사이드바에서 공용.
+ * 4개의 병렬 쿼리로 처리하고 메모리에서 집계.
+ */
+export async function listBranchSummaries(
+  yearMonth: string
+): Promise<BranchSummary[]> {
+  const supabase = await createServerSupabase();
+
+  const [branchesRes, mediaRes, scoresRes, budgetsRes] = await Promise.all([
+    supabase
+      .from("branches")
+      .select("*")
+      .eq("is_active", true)
+      .order("name", { ascending: true }),
+    supabase
+      .from("media_records")
+      .select("branch_id, is_new_discovery")
+      .is("deleted_at", null),
+    supabase
+      .from("score_logs")
+      .select("branch_id, score")
+      .eq("year_month", yearMonth),
+    supabase
+      .from("budget_logs")
+      .select("branch_id, amount")
+      .eq("year_month", yearMonth),
+  ]);
+
+  if (branchesRes.error) throw branchesRes.error;
+  if (mediaRes.error) throw mediaRes.error;
+  if (scoresRes.error) throw scoresRes.error;
+  if (budgetsRes.error) throw budgetsRes.error;
+
+  const mediaByBranch = new Map<string, { count: number; hasDiscovery: boolean }>();
+  for (const row of (mediaRes.data ?? []) as {
+    branch_id: string;
+    is_new_discovery: boolean;
+  }[]) {
+    const cur = mediaByBranch.get(row.branch_id) ?? {
+      count: 0,
+      hasDiscovery: false,
+    };
+    cur.count += 1;
+    if (row.is_new_discovery) cur.hasDiscovery = true;
+    mediaByBranch.set(row.branch_id, cur);
+  }
+
+  const scoreByBranch = new Map<string, number>();
+  for (const row of (scoresRes.data ?? []) as {
+    branch_id: string;
+    score: number;
+  }[]) {
+    scoreByBranch.set(
+      row.branch_id,
+      (scoreByBranch.get(row.branch_id) ?? 0) + row.score
+    );
+  }
+
+  const budgetByBranch = new Map<string, number>();
+  for (const row of (budgetsRes.data ?? []) as {
+    branch_id: string;
+    amount: number;
+  }[]) {
+    budgetByBranch.set(
+      row.branch_id,
+      (budgetByBranch.get(row.branch_id) ?? 0) + row.amount
+    );
+  }
+
+  return ((branchesRes.data ?? []) as Branch[]).map((branch) => ({
+    ...branch,
+    mediaCount: mediaByBranch.get(branch.id)?.count ?? 0,
+    hasDiscovery: mediaByBranch.get(branch.id)?.hasDiscovery ?? false,
+    monthlyScore: scoreByBranch.get(branch.id) ?? 0,
+    monthlyBudgetUsed: budgetByBranch.get(branch.id) ?? 0,
+  }));
+}
