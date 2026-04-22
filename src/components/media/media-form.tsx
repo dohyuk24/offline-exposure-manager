@@ -44,6 +44,8 @@ type MediaFormProps = {
   onSubmit?: (values: MediaFormValues) => void | Promise<void>;
   submitting?: boolean;
   errorMessage?: string | null;
+  initialValues?: Partial<MediaFormValues>;
+  submitLabel?: string;
 };
 
 /**
@@ -54,8 +56,13 @@ export function MediaForm({
   onSubmit,
   submitting,
   errorMessage,
+  initialValues,
+  submitLabel = "등록하기",
 }: MediaFormProps) {
-  const [values, setValues] = useState<MediaFormValues>(INITIAL);
+  const [values, setValues] = useState<MediaFormValues>({
+    ...INITIAL,
+    ...initialValues,
+  });
 
   const update = <K extends keyof MediaFormValues>(
     key: K,
@@ -185,7 +192,7 @@ export function MediaForm({
         disabled={submitting}
         className="w-full rounded-lg bg-[var(--color-accent)] py-3 text-sm font-medium text-white disabled:opacity-50"
       >
-        {submitting ? "저장 중..." : "등록하기"}
+        {submitting ? "저장 중..." : submitLabel}
       </button>
     </form>
   );

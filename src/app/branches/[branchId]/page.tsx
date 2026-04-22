@@ -109,6 +109,7 @@ export default async function BranchPage({
       <Section title="공식매체 (OOH)">
         <MediaGrid
           records={officialRecords}
+          branchSlug={branch.slug}
           emptyMessage="등록된 공식매체가 없어요. 상권에서 후보를 발견하면 제안해주세요."
         />
       </Section>
@@ -116,6 +117,7 @@ export default async function BranchPage({
       <Section title="비공식매체 · 자체보유">
         <MediaGrid
           records={ownedAndUnofficialRecords}
+          branchSlug={branch.slug}
           emptyMessage="등록된 매체가 없어요. 새 매체를 기록해볼까요?"
         />
       </Section>
