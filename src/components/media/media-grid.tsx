@@ -5,6 +5,8 @@ type MediaGridProps = {
   records: MediaRecord[];
   /** 있으면 카드 클릭 시 /branches/{slug}/records/{id}/edit 로 이동 */
   branchSlug?: string;
+  /** location_key → 해당 위치 전체 월별 기록 개수 (2 이상이면 히스토리 배지) */
+  historyCounts?: Map<string, number>;
   emptyMessage?: string;
 };
 
@@ -15,6 +17,7 @@ type MediaGridProps = {
 export function MediaGrid({
   records,
   branchSlug,
+  historyCounts,
   emptyMessage = "등록된 매체가 없어요.",
 }: MediaGridProps) {
   if (records.length === 0) {
@@ -41,6 +44,7 @@ export function MediaGrid({
               ? `/branches/${branchSlug}/records/${record.id}/edit`
               : undefined
           }
+          historyCount={historyCounts?.get(record.location_key) ?? 1}
         />
       ))}
     </div>

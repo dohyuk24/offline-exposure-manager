@@ -16,13 +16,15 @@ type MediaCardProps = {
   record: MediaRecord;
   /** 클릭 시 이동할 경로. 없으면 일반 article 로 렌더. */
   href?: string;
+  /** 같은 위치의 총 월별 기록 수. 2 이상이면 "N개월 기록" 배지 노출. */
+  historyCount?: number;
 };
 
 /**
  * 매체 갤러리 카드 — DESIGN.md 섹션 4.
  * href 가 있으면 Link 로 감싸서 클릭 네비게이션.
  */
-export function MediaCard({ record, href }: MediaCardProps) {
+export function MediaCard({ record, href, historyCount = 1 }: MediaCardProps) {
   const hasPhoto = record.photos?.length > 0;
   const fallback = FALLBACK_THUMB[record.media_type];
   const dateRange = formatDateRange(record.start_date, record.end_date);
@@ -74,11 +76,12 @@ export function MediaCard({ record, href }: MediaCardProps) {
           {dateRange}
         </p>
 
-        <div className="flex gap-3 text-xs text-[var(--color-text-tertiary)]">
+        <div className="flex flex-wrap gap-3 text-xs text-[var(--color-text-tertiary)]">
           {typeof record.cost === "number" && record.cost > 0 ? (
             <span>💰 {Math.round(record.cost / 10000)}만원</span>
           ) : null}
           {hasPhoto ? <span>📷 사진 {record.photos.length}장</span> : null}
+          {historyCount > 1 ? <span>🗓 {historyCount}개월 기록</span> : null}
         </div>
       </div>
     </>
