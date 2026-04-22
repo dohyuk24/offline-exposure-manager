@@ -8,6 +8,7 @@ import {
 } from "@/lib/supabase/queries/media-records";
 import { ConnectionError } from "@/components/ui/connection-error";
 import { MediaHistoryTimeline } from "@/components/media/media-history-timeline";
+import { formatError } from "@/lib/format-error";
 
 import { EditForm } from "./edit-form";
 
@@ -68,7 +69,7 @@ export default async function EditMediaPage({ params }: PageProps) {
       </div>
     );
   } catch (err) {
-    const detail = err instanceof Error ? err.message : String(err);
+    const detail = formatError(err);
     return (
       <div className="mx-auto max-w-xl space-y-6">
         <h1 className="text-[20px] font-semibold">매체 수정</h1>
@@ -77,3 +78,4 @@ export default async function EditMediaPage({ params }: PageProps) {
     );
   }
 }
+

@@ -15,6 +15,7 @@ import { BudgetWidget } from "@/components/budget/budget-widget";
 import { ScoreWidget } from "@/components/score/score-widget";
 import { ConnectionError } from "@/components/ui/connection-error";
 import { MicroFeedback } from "@/components/ui/micro-feedback";
+import { formatError } from "@/lib/format-error";
 
 type BranchPageProps = {
   params: Promise<{ branchId: string }>;
@@ -56,7 +57,7 @@ export default async function BranchPage({
   try {
     data = await loadBranchData(branchId);
   } catch (err) {
-    connectionError = err instanceof Error ? err.message : String(err);
+    connectionError = formatError(err);
   }
 
   if (connectionError) {

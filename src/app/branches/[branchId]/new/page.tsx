@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getBranchBySlug } from "@/lib/supabase/queries/branches";
 import { getMediaRecord } from "@/lib/supabase/queries/media-records";
 import { ConnectionError } from "@/components/ui/connection-error";
+import { formatError } from "@/lib/format-error";
 import type { Branch } from "@/types";
 import type { MediaFormValues } from "@/components/media/media-form";
 
@@ -31,7 +32,7 @@ export default async function RegisterMediaPage({
       sourceRecord = await getMediaRecord(from);
     }
   } catch (err) {
-    connectionError = err instanceof Error ? err.message : String(err);
+    connectionError = formatError(err);
   }
 
   if (connectionError) {

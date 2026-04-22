@@ -34,9 +34,12 @@ export async function getMediaRecord(id: string): Promise<MediaRecord | null> {
  * 최신순 정렬. `excludeId` 지정 시 해당 레코드는 제외.
  */
 export async function listMediaHistory(
-  locationKey: string,
+  locationKey: string | null | undefined,
   excludeId?: string
 ): Promise<MediaRecord[]> {
+  // location_key 가 없는 레코드는 히스토리 그룹이 없음 (마이그레이션 미적용 등).
+  if (!locationKey) return [];
+
   const supabase = await createServerSupabase();
   let query = supabase
     .from("media_records")

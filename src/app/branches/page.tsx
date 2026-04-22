@@ -3,6 +3,7 @@ import Link from "next/link";
 import { listBranchSummaries, type BranchSummary } from "@/lib/supabase/queries/branches";
 import { currentYearMonth } from "@/lib/date";
 import { ConnectionError } from "@/components/ui/connection-error";
+import { formatError } from "@/lib/format-error";
 
 export default async function BranchesIndexPage() {
   const yearMonth = currentYearMonth();
@@ -13,7 +14,7 @@ export default async function BranchesIndexPage() {
   try {
     summaries = await listBranchSummaries(yearMonth);
   } catch (err) {
-    connectionError = err instanceof Error ? err.message : String(err);
+    connectionError = formatError(err);
   }
 
   if (connectionError) {
