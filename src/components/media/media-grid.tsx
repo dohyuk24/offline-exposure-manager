@@ -3,6 +3,8 @@ import { MediaCard } from "@/components/media/media-card";
 
 type MediaGridProps = {
   records: MediaRecord[];
+  /** 있으면 카드 클릭 시 /branches/{slug}/records/{id}/edit 로 이동 */
+  branchSlug?: string;
   emptyMessage?: string;
 };
 
@@ -12,6 +14,7 @@ type MediaGridProps = {
  */
 export function MediaGrid({
   records,
+  branchSlug,
   emptyMessage = "등록된 매체가 없어요.",
 }: MediaGridProps) {
   if (records.length === 0) {
@@ -30,7 +33,15 @@ export function MediaGrid({
       }}
     >
       {records.map((record) => (
-        <MediaCard key={record.id} record={record} />
+        <MediaCard
+          key={record.id}
+          record={record}
+          href={
+            branchSlug
+              ? `/branches/${branchSlug}/records/${record.id}/edit`
+              : undefined
+          }
+        />
       ))}
     </div>
   );

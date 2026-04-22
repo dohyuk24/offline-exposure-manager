@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import type { MediaRecord, MediaType } from "@/types";
 import { CategoryBadge, StatusBadge } from "@/components/ui/status-badge";
 
@@ -12,26 +14,29 @@ const FALLBACK_THUMB: Record<MediaType, { icon: string; bg: string }> = {
 
 type MediaCardProps = {
   record: MediaRecord;
-  onClick?: () => void;
+  /** 클릭 시 이동할 경로. 없으면 일반 article 로 렌더. */
+  href?: string;
 };
 
 /**
  * 매체 갤러리 카드 — DESIGN.md 섹션 4.
+ * href 가 있으면 Link 로 감싸서 클릭 네비게이션.
  */
-export function MediaCard({ record, onClick }: MediaCardProps) {
+export function MediaCard({ record, href }: MediaCardProps) {
   const hasPhoto = record.photos?.length > 0;
   const fallback = FALLBACK_THUMB[record.media_type];
   const dateRange = formatDateRange(record.start_date, record.end_date);
 
   const cardClass = [
-    "media-card group overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] transition-shadow hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-pointer",
+    "media-card group block overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] transition-shadow hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]",
+    href ? "cursor-pointer" : "",
     record.is_new_discovery ? "border-t-2 border-t-[#448361]" : "",
   ]
     .filter(Boolean)
     .join(" ");
 
-  return (
-    <article className={cardClass} onClick={onClick}>
+  const inner = (
+    <>
       <div
         className="relative flex h-[160px] w-full items-center justify-center overflow-hidden bg-[var(--color-bg-secondary)]"
         style={{ backgroundColor: fallback.bg }}
@@ -76,8 +81,18 @@ export function MediaCard({ record, onClick }: MediaCardProps) {
           {hasPhoto ? <span>📷 사진 {record.photos.length}장</span> : null}
         </div>
       </div>
-    </article>
+    </>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className={cardClass}>
+        {inner}
+      </Link>
+    );
+  }
+
+  return <article className={cardClass}>{inner}</article>;
 }
 
 function formatDateRange(start: string | null, end: string | null): string {
