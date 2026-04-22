@@ -49,7 +49,7 @@ export async function listBranchSummaries(
       .order("name", { ascending: true }),
     supabase
       .from("media_records")
-      .select("branch_id, is_new_discovery")
+      .select("branch_id, is_new_discovery, location_key")
       .is("deleted_at", null),
     supabase
       .from("score_logs")
@@ -66,18 +66,19 @@ export async function listBranchSummaries(
   if (scoresRes.error) throw scoresRes.error;
   if (budgetsRes.error) throw budgetsRes.error;
 
-  const mediaByBranch = new Map<string, { count: number; hasDiscovery: boolean }>();
+  // 같은 location_key 는 하나의 매체로 집계 — 월별 히스토리 중복 제거.
+  const keysByBranch = new Map<string, Set<string>>();
+  const discoveryByBranch = new Map<string, boolean>();
   for (const row of (mediaRes.data ?? []) as {
     branch_id: string;
     is_new_discovery: boolean;
+    location_key: string;
   }[]) {
-    const cur = mediaByBranch.get(row.branch_id) ?? {
-      count: 0,
-      hasDiscovery: false,
-    };
-    cur.count += 1;
-    if (row.is_new_discovery) cur.hasDiscovery = true;
-    mediaByBranch.set(row.branch_id, cur);
+    const keySet = keysByBranch.get(row.branch_id) ?? new Set<string>();
+    keySet.add(row.location_key);
+    keysByBranch.set(row.branch_id, keySet);
+    if (row.is_new_discovery)
+      discoveryByBranch.set(row.branch_id, true);
   }
 
   const scoreByBranch = new Map<string, number>();
@@ -104,8 +105,8 @@ export async function listBranchSummaries(
 
   return ((branchesRes.data ?? []) as Branch[]).map((branch) => ({
     ...branch,
-    mediaCount: mediaByBranch.get(branch.id)?.count ?? 0,
-    hasDiscovery: mediaByBranch.get(branch.id)?.hasDiscovery ?? false,
+    mediaCount: keysByBranch.get(branch.id)?.size ?? 0,
+    hasDiscovery: discoveryByBranch.get(branch.id) ?? false,
     monthlyScore: scoreByBranch.get(branch.id) ?? 0,
     monthlyBudgetUsed: budgetByBranch.get(branch.id) ?? 0,
   }));

@@ -32,6 +32,8 @@ export type RegisterMediaPayload = {
   cost: string;
   barter_condition: string;
   is_new_discovery: boolean;
+  /** 기존 레코드 히스토리 이어가기 시 부모 location_key */
+  locationKey?: string;
 };
 
 export async function registerMediaAction(
@@ -51,7 +53,9 @@ export async function registerMediaAction(
   const branch = branchRow as Branch;
 
   // 2. 행동 분류
-  const isNewDiscovery = payload.is_new_discovery;
+  const isContinuation = Boolean(payload.locationKey);
+  // 히스토리 이어가기는 절대 "신규 발굴"이 아니다 — 강제로 false.
+  const isNewDiscovery = isContinuation ? false : payload.is_new_discovery;
   const isBarterSuccess =
     payload.media_type === MEDIA_TYPE.BARTER_BANNER &&
     (payload.status === MEDIA_STATUS.POSTING ||
@@ -64,22 +68,29 @@ export async function registerMediaAction(
   const costNum = parseInt(payload.cost || "0", 10) || 0;
 
   // 3. 매체 레코드 insert
+  const insertPayload: Record<string, unknown> = {
+    branch_id: branch.id,
+    category: payload.category,
+    media_type: payload.media_type,
+    status: payload.status,
+    description: payload.description || null,
+    size: payload.size || null,
+    content_type: payload.content_type || null,
+    start_date: payload.start_date || null,
+    end_date: payload.end_date || null,
+    cost: costNum > 0 ? costNum : null,
+    barter_condition: payload.barter_condition || null,
+    is_new_discovery: isNewDiscovery,
+  };
+  // 히스토리 이어가기면 부모 location_key 를 그대로 상속.
+  // 신규 레코드면 생략 → DB default (gen_random_uuid) 가 독립 키를 부여.
+  if (payload.locationKey) {
+    insertPayload.location_key = payload.locationKey;
+  }
+
   const { data: recordRow, error: insertErr } = await supabase
     .from("media_records")
-    .insert({
-      branch_id: branch.id,
-      category: payload.category,
-      media_type: payload.media_type,
-      status: payload.status,
-      description: payload.description || null,
-      size: payload.size || null,
-      content_type: payload.content_type || null,
-      start_date: payload.start_date || null,
-      end_date: payload.end_date || null,
-      cost: costNum > 0 ? costNum : null,
-      barter_condition: payload.barter_condition || null,
-      is_new_discovery: isNewDiscovery,
-    })
+    .insert(insertPayload)
     .select()
     .single();
   if (insertErr) throw insertErr;
@@ -144,6 +155,7 @@ export async function registerMediaAction(
     mediaType: record.media_type,
     isNewDiscovery,
     isBarterSuccess,
+    isContinuation,
     monthCount: monthCount ?? 1,
   });
 
@@ -162,12 +174,14 @@ function buildFeedback({
   mediaType,
   isNewDiscovery,
   isBarterSuccess,
+  isContinuation,
   monthCount,
 }: {
   branchName: string;
   mediaType: string;
   isNewDiscovery: boolean;
   isBarterSuccess: boolean;
+  isContinuation: boolean;
   monthCount: number;
 }): string {
   if (isNewDiscovery) {
@@ -175,6 +189,9 @@ function buildFeedback({
   }
   if (isBarterSuccess) {
     return `바터제휴 성사! ${branchName} 예산 아끼면서 노출 확보했어요 👍`;
+  }
+  if (isContinuation) {
+    return `${branchName} ${mediaType} 이어서 기록했어요! 이번 달 ${monthCount}번째 업데이트 🎉`;
   }
   return `${branchName} ${mediaType} 기록 완료! 이번 달 ${monthCount}번째 기록이에요 🎉`;
 }

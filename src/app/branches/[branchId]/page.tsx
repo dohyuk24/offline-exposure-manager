@@ -15,6 +15,11 @@ import { BudgetWidget } from "@/components/budget/budget-widget";
 import { ScoreWidget } from "@/components/score/score-widget";
 import { ConnectionError } from "@/components/ui/connection-error";
 import { MicroFeedback } from "@/components/ui/micro-feedback";
+import { formatError } from "@/lib/format-error";
+import {
+  countByLocation,
+  groupByLocationLatest,
+} from "@/lib/media-grouping";
 
 type BranchPageProps = {
   params: Promise<{ branchId: string }>;
@@ -56,7 +61,7 @@ export default async function BranchPage({
   try {
     data = await loadBranchData(branchId);
   } catch (err) {
-    connectionError = err instanceof Error ? err.message : String(err);
+    connectionError = formatError(err);
   }
 
   if (connectionError) {
@@ -77,10 +82,15 @@ export default async function BranchPage({
 
   const { branch, records, budgetUsed, scoreLogs, yearMonth } = data;
 
-  const officialRecords = records.filter(
+  // 같은 location_key 를 공유하는 월별 레코드는 최신 1건만 카드로 노출.
+  // 히스토리는 카드 클릭 후 수정 페이지에서 확인.
+  const latestByLocation = groupByLocationLatest(records);
+  const historyCounts = countByLocation(records);
+
+  const officialRecords = latestByLocation.filter(
     (r) => r.category === MEDIA_CATEGORY.OFFICIAL
   );
-  const ownedAndUnofficialRecords = records.filter(
+  const ownedAndUnofficialRecords = latestByLocation.filter(
     (r) => r.category !== MEDIA_CATEGORY.OFFICIAL
   );
 
@@ -110,6 +120,7 @@ export default async function BranchPage({
         <MediaGrid
           records={officialRecords}
           branchSlug={branch.slug}
+          historyCounts={historyCounts}
           emptyMessage="등록된 공식매체가 없어요. 상권에서 후보를 발견하면 제안해주세요."
         />
       </Section>
@@ -118,6 +129,7 @@ export default async function BranchPage({
         <MediaGrid
           records={ownedAndUnofficialRecords}
           branchSlug={branch.slug}
+          historyCounts={historyCounts}
           emptyMessage="등록된 매체가 없어요. 새 매체를 기록해볼까요?"
         />
       </Section>

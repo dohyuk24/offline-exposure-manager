@@ -131,6 +131,7 @@ create table media_records (
   zone_id text,                     -- 상권 구역 ID (추후 지도 연동)
   is_new_discovery boolean default false,  -- 신규 발굴 여부
   photos text[],                    -- Supabase Storage URL 배열
+  location_key uuid not null default gen_random_uuid(),  -- 같은 위치 레코드 그룹 (히스토리)
   created_at timestamptz default now(),
   updated_at timestamptz default now(),
   deleted_at timestamptz            -- 소프트 딜리트
