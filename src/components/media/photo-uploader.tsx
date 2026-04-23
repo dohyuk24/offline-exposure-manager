@@ -39,11 +39,12 @@ export function PhotoUploader({
   async function handleFileChange(
     event: React.ChangeEvent<HTMLInputElement>
   ) {
+    // 이 첫 로그가 안 찍히면 iOS 가 input onChange 자체를 발화시키지 않은 것.
+    setDebugLog(["onChange 발화"]);
     const files = event.target.files;
-    setDebugLog([]);
 
     if (!files || files.length === 0) {
-      log("파일이 선택되지 않았어요");
+      log("파일이 없음 — 사용자가 취소했거나 iOS 가 파일을 반환하지 않음");
       return;
     }
 
@@ -139,14 +140,20 @@ export function PhotoUploader({
         <span className="text-[11px]">
           JPG · PNG · WebP · HEIC, 최대 {MAX_SIZE_MB}MB
         </span>
+        {/*
+          iOS Safari 호환성:
+          - display:none 은 피한다 (일부 버전에서 picker 가 열리지 않음).
+          - multiple 을 제거 — capture + multiple 조합이 iOS 에서 파일을 반환하지 않는 사례 있음.
+          - 대신 sr-only 스타일로 시각만 숨김.
+        */}
         <input
           type="file"
           accept="image/*"
           capture="environment"
-          multiple
           disabled={disabled || uploading}
           onChange={handleFileChange}
-          className="hidden"
+          className="absolute h-px w-px overflow-hidden opacity-0"
+          style={{ clip: "rect(0 0 0 0)", clipPath: "inset(50%)" }}
         />
       </label>
 
