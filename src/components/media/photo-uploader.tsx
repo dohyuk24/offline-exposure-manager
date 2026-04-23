@@ -124,38 +124,67 @@ export function PhotoUploader({
     onChange(value.filter((u) => u !== url));
   }
 
+  const srOnly: React.CSSProperties = {
+    position: "absolute",
+    width: 1,
+    height: 1,
+    overflow: "hidden",
+    opacity: 0,
+    clip: "rect(0 0 0 0)",
+    clipPath: "inset(50%)",
+  };
+
+  const busy = disabled || uploading;
+
   return (
     <div className="space-y-3">
-      <label
-        className={`flex aspect-video w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-6 text-sm text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-tertiary)] ${
-          disabled || uploading ? "pointer-events-none opacity-60" : ""
-        }`}
-      >
-        <span className="text-2xl" aria-hidden>
-          📷
-        </span>
-        <span>
-          {uploading ? "업로드 중..." : "탭하여 사진 추가 (카메라 / 갤러리)"}
-        </span>
-        <span className="text-[11px]">
-          JPG · PNG · WebP · HEIC, 최대 {MAX_SIZE_MB}MB
-        </span>
-        {/*
-          iOS Safari 호환성:
-          - display:none 은 피한다 (일부 버전에서 picker 가 열리지 않음).
-          - multiple 을 제거 — capture + multiple 조합이 iOS 에서 파일을 반환하지 않는 사례 있음.
-          - 대신 sr-only 스타일로 시각만 숨김.
-        */}
-        <input
-          type="file"
-          accept="image/*"
-          capture="environment"
-          disabled={disabled || uploading}
-          onChange={handleFileChange}
-          className="absolute h-px w-px overflow-hidden opacity-0"
-          style={{ clip: "rect(0 0 0 0)", clipPath: "inset(50%)" }}
-        />
-      </label>
+      <div className="rounded-lg border border-dashed border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-4">
+        <div className="mb-3 text-center text-sm text-[var(--color-text-tertiary)]">
+          {uploading ? "업로드 중..." : "사진 추가"}
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <label
+            className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-[var(--color-border)] bg-white px-3 py-4 text-sm hover:bg-[var(--color-bg-tertiary)] ${
+              busy ? "pointer-events-none opacity-60" : ""
+            }`}
+          >
+            <span className="text-xl" aria-hidden>
+              📷
+            </span>
+            <span>카메라</span>
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              disabled={busy}
+              onChange={handleFileChange}
+              style={srOnly}
+            />
+          </label>
+
+          <label
+            className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-[var(--color-border)] bg-white px-3 py-4 text-sm hover:bg-[var(--color-bg-tertiary)] ${
+              busy ? "pointer-events-none opacity-60" : ""
+            }`}
+          >
+            <span className="text-xl" aria-hidden>
+              🖼
+            </span>
+            <span>갤러리</span>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              disabled={busy}
+              onChange={handleFileChange}
+              style={srOnly}
+            />
+          </label>
+        </div>
+        <p className="mt-2 text-center text-[11px] text-[var(--color-text-tertiary)]">
+          JPG · PNG · WebP · HEIC · 최대 {MAX_SIZE_MB}MB
+        </p>
+      </div>
 
       {errorMessage ? (
         <p className="rounded-md border border-[#C4332F]/40 bg-[#FFE2DD]/40 px-3 py-2 text-xs text-[#C4332F]">
