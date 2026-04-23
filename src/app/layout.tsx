@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Sidebar } from "@/components/layout/sidebar";
 import { DiscoveryFeedBar } from "@/components/layout/discovery-feed-bar";
+import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
 
 export const metadata: Metadata = {
   title: "오프라인 매체 관리",
@@ -27,10 +28,12 @@ export default function RootLayout({
         <DiscoveryFeedBar />
         <div className="flex min-h-[calc(100vh-40px)]">
           <Sidebar />
-          <main className="flex-1 min-w-0 px-4 py-4 md:px-6 md:py-6">
+          {/* pb-24 로 하단 탭바 영역 확보. 데스크톱에선 md:pb-6 */}
+          <main className="flex-1 min-w-0 px-4 py-4 pb-24 md:px-6 md:py-6 md:pb-6">
             {children}
           </main>
         </div>
+        <MobileTabBar />
       </body>
     </html>
   );
