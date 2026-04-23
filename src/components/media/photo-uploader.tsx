@@ -29,50 +29,90 @@ export function PhotoUploader({
 }: PhotoUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [debugLog, setDebugLog] = useState<string[]>([]);
+
+  function log(line: string) {
+    console.log("[photo-uploader]", line);
+    setDebugLog((prev) => [...prev.slice(-4), line]);
+  }
 
   async function handleFileChange(
     event: React.ChangeEvent<HTMLInputElement>
   ) {
     const files = event.target.files;
-    if (!files || files.length === 0) return;
+    setDebugLog([]);
+
+    if (!files || files.length === 0) {
+      log("파일이 선택되지 않았어요");
+      return;
+    }
 
     setErrorMessage(null);
     setUploading(true);
-
     const newUrls: string[] = [];
 
     try {
+      log(`${files.length}개 파일 업로드 시작`);
       const supabase = createBrowserSupabase();
 
       for (const file of Array.from(files)) {
+        log(`${file.name || "(이름 없음)"} · ${Math.round(file.size / 1024)}KB · ${file.type}`);
+
         if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-          setErrorMessage(`${file.name} 은(는) ${MAX_SIZE_MB}MB 를 초과해요`);
+          const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+          setErrorMessage(
+            `${file.name || "사진"} 이 너무 커요 (${sizeMb}MB, 최대 ${MAX_SIZE_MB}MB)`
+          );
           continue;
         }
 
-        const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-        const path = `${branchSlug}/${crypto.randomUUID()}.${ext}`;
+        const ext = extractExt(file);
+        const id = randomId();
+        const path = `${branchSlug}/${id}.${ext}`;
+        log(`→ ${path}`);
 
-        const { error: uploadErr } = await supabase.storage
-          .from(BUCKET)
-          .upload(path, file, {
-            cacheControl: "3600",
-            upsert: false,
-            contentType: file.type || undefined,
-          });
+        try {
+          const { error: uploadErr } = await supabase.storage
+            .from(BUCKET)
+            .upload(path, file, {
+              cacheControl: "3600",
+              upsert: false,
+              contentType: file.type || undefined,
+            });
 
-        if (uploadErr) {
-          setErrorMessage(`업로드 실패: ${uploadErr.message}`);
+          if (uploadErr) {
+            log(`업로드 실패: ${uploadErr.message}`);
+            setErrorMessage(
+              uploadErr.message
+                ? `업로드 실패: ${uploadErr.message}`
+                : "업로드 실패 (이유 불명)"
+            );
+            continue;
+          }
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          log(`업로드 예외: ${msg}`);
+          setErrorMessage(`업로드 예외: ${msg}`);
           continue;
         }
 
         const {
           data: { publicUrl },
         } = supabase.storage.from(BUCKET).getPublicUrl(path);
+        log(`✓ ${publicUrl.slice(0, 60)}...`);
         newUrls.push(publicUrl);
       }
 
-      if (newUrls.length > 0) onChange([...value, ...newUrls]);
+      if (newUrls.length > 0) {
+        onChange([...value, ...newUrls]);
+        log(`완료: ${newUrls.length}장 추가`);
+      } else {
+        log("추가된 사진 없음");
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      log(`전체 실패: ${msg}`);
+      setErrorMessage(`문제가 발생했어요: ${msg}`);
     } finally {
       setUploading(false);
       event.target.value = "";
@@ -116,6 +156,15 @@ export function PhotoUploader({
         </p>
       ) : null}
 
+      {debugLog.length > 0 ? (
+        <details className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-[10px] text-[var(--color-text-tertiary)]">
+          <summary className="cursor-pointer">디버그 로그 (펼치기)</summary>
+          <pre className="mt-2 whitespace-pre-wrap break-all">
+            {debugLog.join("\n")}
+          </pre>
+        </details>
+      ) : null}
+
       {value.length > 0 ? (
         <div className="grid grid-cols-3 gap-2">
           {value.map((url) => (
@@ -144,4 +193,26 @@ export function PhotoUploader({
       ) : null}
     </div>
   );
+}
+
+/**
+ * 파일 확장자 추출. iOS 에서 대문자 .HEIC 로 오거나
+ * 이름이 비어있을 수 있어 방어적으로 처리.
+ */
+function extractExt(file: File): string {
+  const fromName = file.name?.split(".").pop()?.toLowerCase();
+  if (fromName && fromName !== file.name?.toLowerCase()) return fromName;
+  const fromType = file.type?.split("/").pop()?.toLowerCase();
+  if (fromType === "jpeg") return "jpg";
+  return fromType || "jpg";
+}
+
+/**
+ * crypto.randomUUID 폴백. iOS Safari < 15.4 대응.
+ */
+function randomId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 }
