@@ -224,3 +224,38 @@ export type DailyTask = {
   carry_over_count: number;
   created_at: string;
 };
+
+// ============================================================
+// 권한 시스템 (자세한 설계는 docs/permissions-plan.md)
+// ============================================================
+
+export const USER_ROLE = {
+  ADMIN: "admin",
+  MANAGER: "manager",
+  VIEWER: "viewer",
+} as const;
+export type UserRole = (typeof USER_ROLE)[keyof typeof USER_ROLE];
+
+/** Role 권한 위계 (높을수록 권한 큼). 가드 헬퍼에서 비교용. */
+export const ROLE_RANK: Record<UserRole, number> = {
+  viewer: 1,
+  manager: 2,
+  admin: 3,
+};
+
+export type UserProfile = {
+  id: string;
+  display_name: string | null;
+  email: string | null;
+  slack_user_id: string | null;
+  role: UserRole;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type UserBranchAccess = {
+  user_id: string;
+  branch_id: string;
+  granted_at: string;
+};
