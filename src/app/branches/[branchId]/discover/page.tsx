@@ -3,16 +3,22 @@ import { notFound } from "next/navigation";
 
 import { getBranchBySlug } from "@/lib/supabase/queries/branches";
 import { ConnectionError } from "@/components/ui/connection-error";
-import { DiscoverForm } from "@/components/media/discover-form";
+import {
+  DiscoverForm,
+  type DiscoverIntent,
+} from "@/components/media/discover-form";
 import { formatError } from "@/lib/format-error";
 import type { Branch } from "@/types";
 
 type PageProps = {
   params: Promise<{ branchId: string }>;
+  searchParams: Promise<{ intent?: string }>;
 };
 
-export default async function DiscoverPage({ params }: PageProps) {
+export default async function DiscoverPage({ params, searchParams }: PageProps) {
   const { branchId } = await params;
+  const { intent: intentRaw } = await searchParams;
+  const intent: DiscoverIntent = intentRaw === "owned" ? "owned" : "paid";
 
   let branch: Branch | null = null;
   let connectionError: string | null = null;
@@ -26,7 +32,7 @@ export default async function DiscoverPage({ params }: PageProps) {
   if (connectionError) {
     return (
       <div className="space-y-6">
-        <Header title={branchId} />
+        <Header title={branchId} intent={intent} />
         <ConnectionError detail={connectionError} />
       </div>
     );
@@ -36,13 +42,27 @@ export default async function DiscoverPage({ params }: PageProps) {
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
-      <Header title={branch.name} slug={branch.slug} />
-      <DiscoverForm branch={branch} />
+      <Header title={branch.name} slug={branch.slug} intent={intent} />
+      <DiscoverForm branch={branch} intent={intent} />
     </div>
   );
 }
 
-function Header({ title, slug }: { title: string; slug?: string }) {
+function Header({
+  title,
+  slug,
+  intent,
+}: {
+  title: string;
+  slug?: string;
+  intent: DiscoverIntent;
+}) {
+  const labelTop = intent === "owned" ? "O-OOH 자체 보유 등록" : "P-OOH 신규 매체 발굴";
+  const subtitle =
+    intent === "owned"
+      ? "우리 통제 하의 매체(현수막·족자 등) 를 등록해요."
+      : "현장에서 바로 기록 — 사진 + 위치만 있으면 OK";
+
   return (
     <header className="space-y-2">
       <Link
@@ -53,11 +73,11 @@ function Header({ title, slug }: { title: string; slug?: string }) {
       </Link>
       <div>
         <p className="text-xs uppercase tracking-wider text-[var(--color-text-tertiary)]">
-          신규 매체 발굴
+          {labelTop}
         </p>
         <h1 className="text-[20px] font-semibold">{title}</h1>
         <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-          현장에서 바로 기록 — 사진 + 위치만 있으면 OK
+          {subtitle}
         </p>
       </div>
     </header>

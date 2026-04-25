@@ -16,17 +16,23 @@ import {
   type RegisterMediaPayload,
 } from "@/app/branches/[branchId]/new/actions";
 
+export type DiscoverIntent = "paid" | "owned";
+
 type Props = {
   branch: Branch;
+  intent?: DiscoverIntent;
 };
 
 /**
- * 신규 매체 발굴 전용 컴팩트 폼.
- * 자동 세팅: is_new_discovery=true, category=비공식, status=아이디어
- * 필수: 사진 + media_type. 위치 라벨(=description)은 강하게 권장.
- * 옵션: 종료일·비용·바터조건 (펼치기 영역).
+ * 신규 매체 등록 컴팩트 폼.
+ *
+ * intent="paid" (기본): P-OOH 후보 발굴 — status=아이디어 + is_new_discovery=true
+ * intent="owned": O-OOH 자체 보유 매체 등록 — status=게시중 + is_new_discovery=false
  */
-export function DiscoverForm({ branch }: Props) {
+export function DiscoverForm({ branch, intent = "paid" }: Props) {
+  const isOwned = intent === "owned";
+  const targetCategory = isOwned ? MEDIA_CATEGORY.OWNED : MEDIA_CATEGORY.PAID;
+  const targetStatus = isOwned ? MEDIA_STATUS.POSTING : MEDIA_STATUS.IDEA;
   const [photos, setPhotos] = useState<string[]>([]);
   const [mediaType, setMediaType] = useState<MediaType>(MEDIA_TYPE.BANNER);
   const [description, setDescription] = useState("");
@@ -49,9 +55,9 @@ export function DiscoverForm({ branch }: Props) {
 
     const payload: RegisterMediaPayload = {
       branchSlug: branch.slug,
-      category: MEDIA_CATEGORY.PAID,
+      category: targetCategory,
       media_type: mediaType,
-      status: MEDIA_STATUS.IDEA,
+      status: targetStatus,
       description,
       size: "",
       content_type: "",
@@ -59,7 +65,7 @@ export function DiscoverForm({ branch }: Props) {
       end_date: endDate,
       cost,
       barter_condition: barterCondition,
-      is_new_discovery: true,
+      is_new_discovery: !isOwned,
       photos,
     };
 
@@ -175,12 +181,17 @@ export function DiscoverForm({ branch }: Props) {
         disabled={isPending || photoMissing}
         className="w-full rounded-lg bg-[var(--color-accent)] px-4 py-3 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
       >
-        {isPending ? "등록 중..." : "✨ 발굴 등록"}
+        {isPending
+          ? "등록 중..."
+          : isOwned
+            ? "📌 자체 보유 등록"
+            : "✨ 발굴 등록"}
       </button>
 
       <p className="text-center text-[11px] text-[var(--color-text-tertiary)]">
-        P-OOH (유가 옥외) · 상태=아이디어 로 자동 등록돼요. 나중에 매체 카드에서
-        카테고리·상태를 바꿀 수 있어요.
+        {isOwned
+          ? "O-OOH (자체 보유) · 상태=게시중 으로 자동 등록돼요. 나중에 매체 카드에서 변경 가능."
+          : "P-OOH (유가 옥외) · 상태=아이디어 로 자동 등록돼요. 나중에 매체 카드에서 카테고리·상태를 바꿀 수 있어요."}
       </p>
     </form>
   );
