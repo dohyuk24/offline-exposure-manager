@@ -106,6 +106,7 @@ create table branches (
   slug text unique not null,        -- URL용 (yeoksam-arc)
   budget_monthly integer default 500000,
   slack_channel text,               -- Slack 채널 ID
+  slack_user_group_id text,         -- Slack User Group ID (그룹 멘션용)
   is_active boolean default true,
   created_at timestamptz default now()
 );
@@ -153,9 +154,29 @@ create table score_logs (
   id uuid primary key default gen_random_uuid(),
   branch_id uuid references branches(id),
   media_record_id uuid references media_records(id),
-  action text not null,             -- update / new_discovery / barter_success
-  score integer not null,
+  action text not null,             -- task_complete / task_discovery / task_barter
+                                    -- / task_expired / bonus_discovery
+                                    -- (v0 호환: update / new_discovery / barter_success)
+  score integer not null,           -- 음수 가능 (task_expired = -5)
   year_month text not null,         -- '2026-04'
+  created_at timestamptz default now()
+);
+
+-- 데일리 할 일 (자세한 흐름은 docs/daily-routine-plan.md 참고)
+create table daily_tasks (
+  id uuid primary key default gen_random_uuid(),
+  branch_id uuid references branches(id) on delete cascade,
+  task_type text not null,          -- unofficial_update / posting_ending
+                                    -- / negotiating_followup / discovery_zero
+                                    -- / barter_progress
+  related_record_id uuid references media_records(id) on delete cascade,
+                                    -- 자동 완료 매핑 대상. discovery_zero 는 NULL.
+  generated_for date not null,      -- 어느 날 만들어진 task 인지
+  expires_at date not null,         -- carry over chain 시작일 + 7일
+  status text not null default 'open',  -- open / done / expired
+  completed_at timestamptz,
+  completed_by text,                -- auto / manual
+  carry_over_count int not null default 0,  -- 며칠째 이어진 건지
   created_at timestamptz default now()
 );
 ```
@@ -184,12 +205,21 @@ export const MEDIA_CATEGORY = {
 } as const;
 
 export const SCORE_CONFIG = {
+  // v0 호환
   UPDATE: 1,
   UPDATE_WITH_PHOTO: 1.5,
   NEW_DISCOVERY: 5,
   BARTER_SUCCESS: 7,
+  // v1 daily task 기반
+  TASK_COMPLETE: 1,
+  TASK_DISCOVERY_COMPLETE: 5,
+  TASK_BARTER_COMPLETE: 7,
+  TASK_EXPIRED: -5,
+  BONUS_ACTION: 5,
 } as const;
 ```
+
+> 데일리 task / 점수 모델 상세는 `docs/daily-routine-plan.md`.
 
 ---
 

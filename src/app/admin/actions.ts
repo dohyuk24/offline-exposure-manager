@@ -20,6 +20,9 @@ export async function createBranchAction(formData: FormData): Promise<void> {
   const slugRaw = String(formData.get("slug") ?? "").trim();
   const budgetRaw = String(formData.get("budget_monthly") ?? "500000");
   const slackChannel = String(formData.get("slack_channel") ?? "").trim();
+  const slackUserGroupId = String(
+    formData.get("slack_user_group_id") ?? ""
+  ).trim();
 
   if (!name) throw new Error("지점 이름이 필요해요");
   const slug = slugRaw ? slugify(slugRaw) : slugify(name);
@@ -34,6 +37,7 @@ export async function createBranchAction(formData: FormData): Promise<void> {
     slug,
     budget_monthly: budget,
     slack_channel: slackChannel || null,
+    slack_user_group_id: slackUserGroupId || null,
     is_active: true,
   });
   if (error) throw error;
@@ -49,6 +53,9 @@ export async function updateBranchAction(formData: FormData): Promise<void> {
   const name = String(formData.get("name") ?? "").trim();
   const budgetRaw = String(formData.get("budget_monthly") ?? "500000");
   const slackChannel = String(formData.get("slack_channel") ?? "").trim();
+  const slackUserGroupId = String(
+    formData.get("slack_user_group_id") ?? ""
+  ).trim();
 
   if (!id) throw new Error("지점 id 가 필요해요");
   if (!name) throw new Error("지점 이름이 필요해요");
@@ -63,6 +70,7 @@ export async function updateBranchAction(formData: FormData): Promise<void> {
       name,
       budget_monthly: budget,
       slack_channel: slackChannel || null,
+      slack_user_group_id: slackUserGroupId || null,
     })
     .eq("id", id);
   if (error) throw error;
