@@ -66,7 +66,7 @@ export async function registerMediaAction(
     (payload.status === MEDIA_STATUS.POSTING ||
       payload.status === MEDIA_STATUS.NEGOTIATED);
   const isOfficialProposal =
-    payload.category === MEDIA_CATEGORY.OFFICIAL &&
+    payload.category === MEDIA_CATEGORY.PAID &&
     (payload.status === MEDIA_STATUS.IDEA ||
       payload.status === MEDIA_STATUS.NEGOTIATING);
 
@@ -120,11 +120,9 @@ export async function registerMediaAction(
   await autoCompleteForRecord(record);
 
   // 5. 예산 로그 (자체보유·비공식 + 비용 > 0 일 때만)
-  if (
-    costNum > 0 &&
-    (payload.category === MEDIA_CATEGORY.OWNED ||
-      payload.category === MEDIA_CATEGORY.UNOFFICIAL)
-  ) {
+  // P-OOH 는 별도 결제 채널 가정 → 운영 예산 누적 대상 X.
+  // 그 외 카테고리 (O / D / A) 의 비용은 budget_logs 에 누적.
+  if (costNum > 0 && payload.category !== MEDIA_CATEGORY.PAID) {
     await supabase.from("budget_logs").insert({
       branch_id: branch.id,
       media_record_id: record.id,

@@ -38,13 +38,15 @@
   --badge-negotiated-bg: #d3e5ef;
   --badge-negotiated-fg: #337ea9;
 
-  /* 구분 배지 */
-  --cat-official-bg: #d3e5ef;
-  --cat-official-fg: #337ea9;
-  --cat-owned-bg: #eae0d9;
-  --cat-owned-fg: #9f6b53;
-  --cat-unofficial-bg: #dbeddb;
-  --cat-unofficial-fg: #448361;
+  /* 구분 배지 (4분류: P / A / D / O OOH) */
+  --cat-paid-bg: #d3e5ef;        /* P-OOH — blue */
+  --cat-paid-fg: #337ea9;
+  --cat-affiliated-bg: #f4ddca;  /* A-OOH — orange (v2) */
+  --cat-affiliated-fg: #9f6b53;
+  --cat-distribution-bg: #fadec9; /* D-OOH — peach */
+  --cat-distribution-fg: #c4332f;
+  --cat-owned-bg: #dbeddb;       /* O-OOH — green */
+  --cat-owned-fg: #448361;
 
   /* 발견 피드 */
   --discovery-bg: #ebf3fb;

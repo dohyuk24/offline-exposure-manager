@@ -24,7 +24,9 @@ export function isUnofficialUpdateTriggered(
   today: Date
 ): boolean {
   if (record.deleted_at) return false;
-  if (record.category !== MEDIA_CATEGORY.UNOFFICIAL) return false;
+  // 4분류 도입 후: 자체 보유 매체(O-OOH) 사진 갱신을 챙긴다.
+  // (구 "비공식" 트리거 → "자체 보유 사진 갱신" 으로 의미 재정의)
+  if (record.category !== MEDIA_CATEGORY.OWNED) return false;
   if (record.status !== MEDIA_STATUS.POSTING) return false;
   return daysBetween(new Date(record.updated_at), today) >= UNOFFICIAL_UPDATE_DAYS;
 }

@@ -81,10 +81,9 @@ export async function updateMediaAction(
     .eq("media_record_id", payload.recordId)
     .eq("year_month", yearMonth);
 
+  // P-OOH 외 카테고리는 운영 예산 (4분류 정책 — new/actions.ts 동기).
   const shouldLogBudget =
-    costNum > 0 &&
-    (payload.category === MEDIA_CATEGORY.OWNED ||
-      payload.category === MEDIA_CATEGORY.UNOFFICIAL);
+    costNum > 0 && payload.category !== MEDIA_CATEGORY.PAID;
   if (shouldLogBudget) {
     await supabase.from("budget_logs").insert({
       branch_id: branch.id,

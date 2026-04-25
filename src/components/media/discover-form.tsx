@@ -49,7 +49,7 @@ export function DiscoverForm({ branch }: Props) {
 
     const payload: RegisterMediaPayload = {
       branchSlug: branch.slug,
-      category: MEDIA_CATEGORY.UNOFFICIAL,
+      category: MEDIA_CATEGORY.PAID,
       media_type: mediaType,
       status: MEDIA_STATUS.IDEA,
       description,
@@ -179,8 +179,8 @@ export function DiscoverForm({ branch }: Props) {
       </button>
 
       <p className="text-center text-[11px] text-[var(--color-text-tertiary)]">
-        구분=비공식 / 상태=아이디어 로 자동 등록돼요. 나중에 매체 카드에서
-        업데이트할 수 있어요.
+        P-OOH (유가 옥외) · 상태=아이디어 로 자동 등록돼요. 나중에 매체 카드에서
+        카테고리·상태를 바꿀 수 있어요.
       </p>
     </form>
   );

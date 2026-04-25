@@ -15,7 +15,7 @@ type Props = {
 };
 
 const TASK_TITLE: Record<DailyTaskType, string> = {
-  unofficial_update: "비공식 매체 업데이트 필요",
+  unofficial_update: "자체 보유 매체 사진 갱신",
   posting_ending: "게시 종료 임박",
   negotiating_followup: "협의중 매체 후속 액션",
   discovery_zero: "이번 달 신규 발굴 0건",

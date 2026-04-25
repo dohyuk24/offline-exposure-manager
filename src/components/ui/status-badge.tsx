@@ -20,9 +20,16 @@ const STATUS_STYLE: Record<MediaStatus, { bg: string; fg: string }> = {
 };
 
 const CATEGORY_STYLE: Record<MediaCategory, { bg: string; fg: string }> = {
-  공식: { bg: "var(--cat-official-bg)", fg: "var(--cat-official-fg)" },
-  자체보유: { bg: "var(--cat-owned-bg)", fg: "var(--cat-owned-fg)" },
-  비공식: { bg: "var(--cat-unofficial-bg)", fg: "var(--cat-unofficial-fg)" },
+  "P-OOH": { bg: "var(--cat-paid-bg)", fg: "var(--cat-paid-fg)" },
+  "A-OOH": {
+    bg: "var(--cat-affiliated-bg)",
+    fg: "var(--cat-affiliated-fg)",
+  },
+  "D-OOH": {
+    bg: "var(--cat-distribution-bg)",
+    fg: "var(--cat-distribution-fg)",
+  },
+  "O-OOH": { bg: "var(--cat-owned-bg)", fg: "var(--cat-owned-fg)" },
 };
 
 export function StatusBadge({ status }: { status: MediaStatus }) {

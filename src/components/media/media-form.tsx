@@ -30,7 +30,7 @@ export type MediaFormValues = {
 };
 
 const INITIAL: MediaFormValues = {
-  category: MEDIA_CATEGORY.UNOFFICIAL,
+  category: MEDIA_CATEGORY.PAID,
   media_type: MEDIA_TYPE.BANNER,
   status: MEDIA_STATUS.POSTING,
   description: "",
