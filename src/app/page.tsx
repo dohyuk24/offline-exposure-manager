@@ -14,6 +14,7 @@ import {
 } from "@/lib/supabase/queries/daily-tasks";
 import { currentYearMonth, timeAgo } from "@/lib/date";
 import { formatError } from "@/lib/format-error";
+import { sortBranchesByDisplayOrder } from "@/lib/branch-order";
 import { ConnectionError } from "@/components/ui/connection-error";
 import { UnresolvedTasksBanner } from "@/components/daily/unresolved-tasks-banner";
 
@@ -33,7 +34,7 @@ export default async function HomePage() {
       getDiscoveryFeed(yearMonth, 5),
       getUnresolvedTasksByBranch(),
     ]);
-    summaries = s;
+    summaries = sortBranchesByDisplayOrder(s);
     feedItems = f.items;
     discoveryCount = f.totalCount;
     unresolvedTotal = u.totalCount;

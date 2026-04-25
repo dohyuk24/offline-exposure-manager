@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { listActiveBranches } from "@/lib/supabase/queries/branches";
+import { sortBranchesByDisplayOrder } from "@/lib/branch-order";
 import type { Branch } from "@/types";
 
 /**
@@ -12,7 +13,7 @@ import type { Branch } from "@/types";
 export async function Sidebar() {
   let branches: Branch[] = [];
   try {
-    branches = await listActiveBranches();
+    branches = sortBranchesByDisplayOrder(await listActiveBranches());
   } catch {
     // env 미설정 · DB 불가 시엔 지점 섹션만 비움.
     branches = [];

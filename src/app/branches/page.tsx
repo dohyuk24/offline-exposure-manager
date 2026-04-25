@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { listBranchSummaries, type BranchSummary } from "@/lib/supabase/queries/branches";
 import { currentYearMonth } from "@/lib/date";
+import { sortBranchesByDisplayOrder } from "@/lib/branch-order";
 import { ConnectionError } from "@/components/ui/connection-error";
 import { formatError } from "@/lib/format-error";
 
@@ -12,7 +13,7 @@ export default async function BranchesIndexPage() {
   let connectionError: string | null = null;
 
   try {
-    summaries = await listBranchSummaries(yearMonth);
+    summaries = sortBranchesByDisplayOrder(await listBranchSummaries(yearMonth));
   } catch (err) {
     connectionError = formatError(err);
   }

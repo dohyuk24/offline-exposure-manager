@@ -4,6 +4,7 @@ import type { Branch } from "@/types";
 import { createServerSupabase } from "@/lib/supabase/client";
 import { listBranchSummaries } from "@/lib/supabase/queries/branches";
 import { currentYearMonth } from "@/lib/date";
+import { sortBranchesByDisplayOrder } from "@/lib/branch-order";
 import { requireAdmin } from "@/lib/admin-auth";
 import { formatError } from "@/lib/format-error";
 import { ConnectionError } from "@/components/ui/connection-error";
@@ -31,9 +32,9 @@ export default async function AdminPage() {
       .select("*")
       .order("name", { ascending: true });
     if (error) throw error;
-    allBranches = (branchesData ?? []) as Branch[];
+    allBranches = sortBranchesByDisplayOrder((branchesData ?? []) as Branch[]);
 
-    summaries = await listBranchSummaries(yearMonth);
+    summaries = sortBranchesByDisplayOrder(await listBranchSummaries(yearMonth));
   } catch (err) {
     loadError = formatError(err);
   }
