@@ -3,10 +3,11 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
-import type { Branch } from "@/types";
+import type { Branch, MediaRecord } from "@/types";
 import { MEDIA_CATEGORY } from "@/types";
 import { createServerSupabase } from "@/lib/supabase/client";
 import { currentYearMonth } from "@/lib/date";
+import { autoCompleteForRecord } from "@/lib/daily-tasks/auto-complete";
 
 export type UpdateMediaPayload = {
   recordId: string;
@@ -46,7 +47,7 @@ export async function updateMediaAction(
 
   const costNum = parseInt(payload.cost || "0", 10) || 0;
 
-  const { error: updateErr } = await supabase
+  const { data: updatedRow, error: updateErr } = await supabase
     .from("media_records")
     .update({
       category: payload.category,
@@ -61,10 +62,16 @@ export async function updateMediaAction(
       barter_condition: payload.barter_condition || null,
       is_new_discovery: payload.is_new_discovery,
       photos: payload.photos ?? [],
+      updated_at: new Date().toISOString(),
     })
     .eq("id", payload.recordId)
-    .eq("branch_id", branch.id);
+    .eq("branch_id", branch.id)
+    .select()
+    .single();
   if (updateErr) throw updateErr;
+
+  // 수정된 record 의 트리거가 더 이상 만족 안 되는 open task 자동 완료.
+  if (updatedRow) await autoCompleteForRecord(updatedRow as MediaRecord);
 
   // 예산 로그 동기화 — 이번 달에 해당 레코드로 기록된 로그만 재계산.
   const yearMonth = currentYearMonth();
@@ -115,12 +122,17 @@ export async function deleteMediaAction(payload: {
   if (branchErr) throw branchErr;
   if (!branchRow) throw new Error("지점을 찾을 수 없어요");
 
-  const { error: updateErr } = await supabase
+  const { data: deletedRow, error: updateErr } = await supabase
     .from("media_records")
     .update({ deleted_at: new Date().toISOString() })
     .eq("id", payload.recordId)
-    .eq("branch_id", (branchRow as { id: string }).id);
+    .eq("branch_id", (branchRow as { id: string }).id)
+    .select()
+    .single();
   if (updateErr) throw updateErr;
+
+  // 삭제된 매체에 걸린 open task 도 자동 완료 (deleted_at 이 트리거를 false 로)
+  if (deletedRow) await autoCompleteForRecord(deletedRow as MediaRecord);
 
   // 이번 달 관련 예산 로그 정리 (추후 월간 집계 오염 방지)
   const yearMonth = currentYearMonth();
