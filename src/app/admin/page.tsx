@@ -182,6 +182,11 @@ function AddBranchForm() {
           label="Slack 채널 ID"
           placeholder="C_EXAMPLE"
         />
+        <Field
+          name="slack_user_group_id"
+          label="Slack 그룹 태그 ID"
+          placeholder="S_EXAMPLE (예: S0XXXXX)"
+        />
         <button
           type="submit"
           className="rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white"
@@ -251,6 +256,12 @@ function BranchRow({ branch }: { branch: Branch }) {
             name="slack_channel"
             label="Slack 채널 ID"
             defaultValue={branch.slack_channel ?? ""}
+          />
+          <Field
+            name="slack_user_group_id"
+            label="Slack 그룹 태그 ID"
+            defaultValue={branch.slack_user_group_id ?? ""}
+            placeholder="S_EXAMPLE (예: S0XXXXX)"
           />
           <button
             type="submit"

@@ -43,18 +43,78 @@ export const CONTENT_TYPE = {
 export type ContentType = (typeof CONTENT_TYPE)[keyof typeof CONTENT_TYPE];
 
 export const SCORE_CONFIG = {
+  // v0 호환 (별도 액션이 발생할 때 직접 부여하던 점수)
   UPDATE: 1,
   UPDATE_WITH_PHOTO: 1.5,
   NEW_DISCOVERY: 5,
   BARTER_SUCCESS: 7,
+  // v1 daily task 기반 점수
+  TASK_COMPLETE: 1,
+  TASK_DISCOVERY_COMPLETE: 5,
+  TASK_BARTER_COMPLETE: 7,
+  TASK_EXPIRED: -5,
+  BONUS_ACTION: 5,
 } as const;
 
 export const SCORE_ACTION = {
+  // v0
   UPDATE: "update",
   NEW_DISCOVERY: "new_discovery",
   BARTER_SUCCESS: "barter_success",
+  // v1 daily task 기반
+  TASK_COMPLETE: "task_complete",
+  TASK_DISCOVERY: "task_discovery",
+  TASK_BARTER: "task_barter",
+  TASK_EXPIRED: "task_expired",
+  BONUS_DISCOVERY: "bonus_discovery",
 } as const;
 export type ScoreAction = (typeof SCORE_ACTION)[keyof typeof SCORE_ACTION];
+
+export const DAILY_TASK_TYPE = {
+  UNOFFICIAL_UPDATE: "unofficial_update",
+  POSTING_ENDING: "posting_ending",
+  NEGOTIATING_FOLLOWUP: "negotiating_followup",
+  DISCOVERY_ZERO: "discovery_zero",
+  BARTER_PROGRESS: "barter_progress",
+} as const;
+export type DailyTaskType =
+  (typeof DAILY_TASK_TYPE)[keyof typeof DAILY_TASK_TYPE];
+
+export const DAILY_TASK_STATUS = {
+  OPEN: "open",
+  DONE: "done",
+  EXPIRED: "expired",
+} as const;
+export type DailyTaskStatus =
+  (typeof DAILY_TASK_STATUS)[keyof typeof DAILY_TASK_STATUS];
+
+export const DAILY_TASK_COMPLETED_BY = {
+  AUTO: "auto",
+  MANUAL: "manual",
+} as const;
+export type DailyTaskCompletedBy =
+  (typeof DAILY_TASK_COMPLETED_BY)[keyof typeof DAILY_TASK_COMPLETED_BY];
+
+/** Task 타입별 완료 시 점수 매핑. */
+export const TASK_COMPLETE_SCORE: Record<DailyTaskType, number> = {
+  unofficial_update: SCORE_CONFIG.TASK_COMPLETE,
+  posting_ending: SCORE_CONFIG.TASK_COMPLETE,
+  negotiating_followup: SCORE_CONFIG.TASK_COMPLETE,
+  discovery_zero: SCORE_CONFIG.TASK_DISCOVERY_COMPLETE,
+  barter_progress: SCORE_CONFIG.TASK_BARTER_COMPLETE,
+};
+
+/** Task 만료(7일 미처리) 시 차감 점수. 모든 타입 동일. */
+export const TASK_EXPIRE_SCORE = SCORE_CONFIG.TASK_EXPIRED;
+
+/** Task 자동 완료가 가능한지 여부. discovery_zero 는 자동 전용. */
+export const TASK_MANUAL_CHECK_ALLOWED: Record<DailyTaskType, boolean> = {
+  unofficial_update: true,
+  posting_ending: true,
+  negotiating_followup: true,
+  discovery_zero: false,
+  barter_progress: true,
+};
 
 // ============================================================
 // DB row 타입 — CLAUDE.md 스키마와 일치
@@ -66,6 +126,7 @@ export type Branch = {
   slug: string;
   budget_monthly: number;
   slack_channel: string | null;
+  slack_user_group_id: string | null;
   is_active: boolean;
   created_at: string;
 };
@@ -113,5 +174,19 @@ export type ScoreLog = {
   action: ScoreAction;
   score: number;
   year_month: string;
+  created_at: string;
+};
+
+export type DailyTask = {
+  id: string;
+  branch_id: string;
+  task_type: DailyTaskType;
+  related_record_id: string | null;
+  generated_for: string; // yyyy-mm-dd
+  expires_at: string; // yyyy-mm-dd
+  status: DailyTaskStatus;
+  completed_at: string | null;
+  completed_by: DailyTaskCompletedBy | null;
+  carry_over_count: number;
   created_at: string;
 };
