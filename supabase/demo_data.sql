@@ -357,3 +357,20 @@ from media_records
 where media_type = '바터제휴배너'
   and status = '게시중'
   and barter_condition is not null;
+
+-- ============================================================
+-- 4) D-OOH 회차 데모 (각 디자인당 2회차 — 4월 초/중)
+-- distribution_events 는 media_records 의 ON DELETE CASCADE 로 자동 정리됨.
+-- ============================================================
+
+insert into distribution_events
+  (media_record_id, distributed_on, location_label, quantity, cost, memo)
+select id, '2026-04-05', '주변 오피스 1차 배포', 1500, 30000, '오전 출근시간 배포'
+from media_records
+where category = 'D-OOH';
+
+insert into distribution_events
+  (media_record_id, distributed_on, location_label, quantity, cost, memo)
+select id, '2026-04-15', '역세권 카페 거치', 800, 15000, '주변 카페 동의 받음'
+from media_records
+where category = 'D-OOH';
