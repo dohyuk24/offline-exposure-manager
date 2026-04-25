@@ -145,36 +145,45 @@ export default async function BranchPage({
         💡 기존 매체는 카드를 눌러 업데이트할 수 있어요.
       </p>
 
-      <Section title="P-OOH (유가 옥외)">
+      <SectionWithCta
+        title="P-OOH (유가 옥외)"
+        cta={{
+          href: `/branches/${branch.slug}/discover?intent=paid`,
+          label: "+ 발굴 등록",
+        }}
+      >
         <MediaGrid
           records={paidRecords}
           branchSlug={branch.slug}
           historyCounts={historyCounts}
           emptyMessage="등록된 유가 옥외 매체가 없어요. 상권에서 후보를 발견하면 ✨ 신규 발굴 으로 제안해주세요."
         />
-      </Section>
+      </SectionWithCta>
 
-      <Section title="O-OOH (자체 보유)">
+      <SectionWithCta
+        title="O-OOH (자체 보유)"
+        cta={{
+          href: `/branches/${branch.slug}/discover?intent=owned`,
+          label: "+ 자체 보유 등록",
+        }}
+      >
         <MediaGrid
           records={ownedRecords}
           branchSlug={branch.slug}
           historyCounts={historyCounts}
           emptyMessage="자체 보유 매체가 없어요. 우리 통제 매체(현수막·족자 등)를 등록해보세요."
         />
-      </Section>
+      </SectionWithCta>
 
-      <section className="space-y-3">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="text-[15px] font-medium">D-OOH (배포형)</h2>
-          <Link
-            href={`/branches/${branch.slug}/distributions/new`}
-            className="rounded-md border border-[var(--color-border)] bg-white px-3 py-1.5 text-xs font-medium text-[var(--color-accent)] hover:bg-[var(--color-bg-secondary)]"
-          >
-            + 배포 기록
-          </Link>
-        </div>
+      <SectionWithCta
+        title="D-OOH (배포형)"
+        cta={{
+          href: `/branches/${branch.slug}/distributions/new`,
+          label: "+ 배포 기록",
+        }}
+      >
         <DistributionCardGrid designs={designs} branchSlug={branch.slug} />
-      </section>
+      </SectionWithCta>
 
       <Section title="A-OOH (제휴)">
         {affiliatedRecords.length > 0 ? (
@@ -206,6 +215,31 @@ function Section({
   return (
     <section className="space-y-3">
       <h2 className="text-[15px] font-medium">{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+function SectionWithCta({
+  title,
+  cta,
+  children,
+}: {
+  title: string;
+  cta: { href: string; label: string };
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-[15px] font-medium">{title}</h2>
+        <Link
+          href={cta.href}
+          className="rounded-md border border-[var(--color-border)] bg-white px-3 py-1.5 text-xs font-medium text-[var(--color-accent)] hover:bg-[var(--color-bg-secondary)]"
+        >
+          {cta.label}
+        </Link>
+      </div>
       {children}
     </section>
   );
