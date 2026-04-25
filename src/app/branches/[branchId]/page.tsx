@@ -20,6 +20,10 @@ import { MediaGrid } from "@/components/media/media-grid";
 import { DistributionCardGrid } from "@/components/media/distribution-card";
 import { DailyTaskCard } from "@/components/daily/daily-task-card";
 import { BranchTabs } from "@/components/branch/branch-tabs";
+import {
+  CategorySubTabs,
+  parseCategoryTab,
+} from "@/components/branch/category-sub-tabs";
 import { ConnectionError } from "@/components/ui/connection-error";
 import { MicroFeedback } from "@/components/ui/micro-feedback";
 import { formatError } from "@/lib/format-error";
@@ -30,7 +34,7 @@ import {
 
 type BranchPageProps = {
   params: Promise<{ branchId: string }>;
-  searchParams: Promise<{ feedback?: string }>;
+  searchParams: Promise<{ feedback?: string; cat?: string }>;
 };
 
 type BranchData = {
@@ -69,7 +73,8 @@ export default async function BranchPage({
   searchParams,
 }: BranchPageProps) {
   const { branchId } = await params;
-  const { feedback } = await searchParams;
+  const { feedback, cat } = await searchParams;
+  const activeCat = parseCategoryTab(cat);
 
   let data: BranchData | null = null;
   let connectionError: string | null = null;
@@ -141,64 +146,83 @@ export default async function BranchPage({
         todayIso={todayIso}
       />
 
+      <CategorySubTabs
+        branchSlug={branch.slug}
+        active={activeCat}
+        counts={{
+          [MEDIA_CATEGORY.PAID]: paidRecords.length,
+          [MEDIA_CATEGORY.OWNED]: ownedRecords.length,
+          [MEDIA_CATEGORY.DISTRIBUTION]: designs.length,
+          [MEDIA_CATEGORY.AFFILIATED]: affiliatedRecords.length,
+        }}
+      />
+
       <p className="text-[12px] text-[var(--color-text-tertiary)]">
         💡 기존 매체는 카드를 눌러 업데이트할 수 있어요.
       </p>
 
-      <SectionWithCta
-        title="P-OOH (유가 옥외)"
-        cta={{
-          href: `/branches/${branch.slug}/discover?intent=paid`,
-          label: "+ 발굴 등록",
-        }}
-      >
-        <MediaGrid
-          records={paidRecords}
-          branchSlug={branch.slug}
-          historyCounts={historyCounts}
-          emptyMessage="등록된 유가 옥외 매체가 없어요. 상권에서 후보를 발견하면 ✨ 신규 발굴 으로 제안해주세요."
-        />
-      </SectionWithCta>
+      {activeCat === "all" || activeCat === MEDIA_CATEGORY.PAID ? (
+        <SectionWithCta
+          title="P-OOH (유가 옥외)"
+          cta={{
+            href: `/branches/${branch.slug}/discover?intent=paid`,
+            label: "+ 발굴 등록",
+          }}
+        >
+          <MediaGrid
+            records={paidRecords}
+            branchSlug={branch.slug}
+            historyCounts={historyCounts}
+            emptyMessage="등록된 유가 옥외 매체가 없어요. 상권에서 후보를 발견하면 ✨ 신규 발굴 으로 제안해주세요."
+          />
+        </SectionWithCta>
+      ) : null}
 
-      <SectionWithCta
-        title="O-OOH (자체 보유)"
-        cta={{
-          href: `/branches/${branch.slug}/discover?intent=owned`,
-          label: "+ 자체 보유 등록",
-        }}
-      >
-        <MediaGrid
-          records={ownedRecords}
-          branchSlug={branch.slug}
-          historyCounts={historyCounts}
-          emptyMessage="자체 보유 매체가 없어요. 우리 통제 매체(현수막·족자 등)를 등록해보세요."
-        />
-      </SectionWithCta>
+      {activeCat === "all" || activeCat === MEDIA_CATEGORY.OWNED ? (
+        <SectionWithCta
+          title="O-OOH (자체 보유)"
+          cta={{
+            href: `/branches/${branch.slug}/discover?intent=owned`,
+            label: "+ 자체 보유 등록",
+          }}
+        >
+          <MediaGrid
+            records={ownedRecords}
+            branchSlug={branch.slug}
+            historyCounts={historyCounts}
+            emptyMessage="자체 보유 매체가 없어요. 우리 통제 매체(현수막·족자 등)를 등록해보세요."
+          />
+        </SectionWithCta>
+      ) : null}
 
-      <SectionWithCta
-        title="D-OOH (배포형)"
-        cta={{
-          href: `/branches/${branch.slug}/distributions/new`,
-          label: "+ 배포 기록",
-        }}
-      >
-        <DistributionCardGrid designs={designs} branchSlug={branch.slug} />
-      </SectionWithCta>
+      {activeCat === "all" || activeCat === MEDIA_CATEGORY.DISTRIBUTION ? (
+        <SectionWithCta
+          title="D-OOH (배포형)"
+          cta={{
+            href: `/branches/${branch.slug}/distributions/new`,
+            label: "+ 배포 기록",
+          }}
+        >
+          <DistributionCardGrid designs={designs} branchSlug={branch.slug} />
+        </SectionWithCta>
+      ) : null}
 
-      <SectionWithCta
-        title="A-OOH (제휴)"
-        cta={{
-          href: `/branches/${branch.slug}/discover?intent=affiliated`,
-          label: "+ 제휴 등록",
-        }}
-      >
-        <MediaGrid
-          records={affiliatedRecords}
-          branchSlug={branch.slug}
-          historyCounts={historyCounts}
-          emptyMessage="등록된 제휴 매체가 없어요. 비용 대신 혜택·관계로 확보한 매체를 + 제휴 등록 으로 기록해주세요."
-        />
-      </SectionWithCta>
+      {activeCat === "all" || activeCat === MEDIA_CATEGORY.AFFILIATED ? (
+        <SectionWithCta
+          title="A-OOH (제휴)"
+          cta={{
+            href: `/branches/${branch.slug}/discover?intent=affiliated`,
+            label: "+ 제휴 등록",
+          }}
+        >
+          <MediaGrid
+            records={affiliatedRecords}
+            branchSlug={branch.slug}
+            historyCounts={historyCounts}
+            emptyMessage="등록된 제휴 매체가 없어요. 비용 대신 혜택·관계로 확보한 매체를 + 제휴 등록 으로 기록해주세요."
+          />
+        </SectionWithCta>
+      ) : null}
 
       {feedback ? <MicroFeedback key={feedback} message={feedback} /> : null}
     </div>
