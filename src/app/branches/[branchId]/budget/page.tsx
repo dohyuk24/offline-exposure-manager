@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getBranchBySlug } from "@/lib/supabase/queries/branches";
@@ -10,6 +9,7 @@ import { currentYearMonth } from "@/lib/date";
 import { formatError } from "@/lib/format-error";
 
 import { BudgetWidget } from "@/components/budget/budget-widget";
+import { BranchTabs } from "@/components/branch/branch-tabs";
 import { ConnectionError } from "@/components/ui/connection-error";
 
 type PageProps = {
@@ -50,23 +50,17 @@ export default async function BranchBudgetPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
-      <header className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase tracking-wider text-[var(--color-text-tertiary)]">
-            예산
-          </p>
-          <h1 className="text-[20px] font-semibold">{branch.name}</h1>
-          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-            {yearMonth} 기준
-          </p>
-        </div>
-        <Link
-          href={`/branches/${branch.slug}`}
-          className="shrink-0 text-xs text-[var(--color-text-tertiary)] hover:underline"
-        >
-          ← 지점으로
-        </Link>
+      <header>
+        <p className="text-xs uppercase tracking-wider text-[var(--color-text-tertiary)]">
+          예산
+        </p>
+        <h1 className="text-[20px] font-semibold">{branch.name}</h1>
+        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+          {yearMonth} 기준
+        </p>
       </header>
+
+      <BranchTabs branchSlug={branch.slug} active="budget" />
 
       <BudgetWidget allocated={branch.budget_monthly} used={used} />
 

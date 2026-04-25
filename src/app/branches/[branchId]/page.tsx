@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import type { Branch, MediaRecord, ScoreLog } from "@/types";
-import { MEDIA_CATEGORY, SCORE_ACTION, SCORE_CONFIG } from "@/types";
+import type { Branch, MediaRecord } from "@/types";
+import { MEDIA_CATEGORY } from "@/types";
 
 import { getBranchBySlug } from "@/lib/supabase/queries/branches";
 import { listMediaByBranch } from "@/lib/supabase/queries/media-records";
-import { listBranchScoreLogs } from "@/lib/supabase/queries/score-logs";
 import {
   getTasksForWidget,
   type DailyTaskWithRecord,
@@ -14,8 +13,8 @@ import {
 import { currentYearMonth } from "@/lib/date";
 
 import { MediaGrid } from "@/components/media/media-grid";
-import { ScoreWidget } from "@/components/score/score-widget";
 import { DailyTaskCard } from "@/components/daily/daily-task-card";
+import { BranchTabs } from "@/components/branch/branch-tabs";
 import { ConnectionError } from "@/components/ui/connection-error";
 import { MicroFeedback } from "@/components/ui/micro-feedback";
 import { formatError } from "@/lib/format-error";
@@ -32,7 +31,6 @@ type BranchPageProps = {
 type BranchData = {
   branch: Branch;
   records: MediaRecord[];
-  scoreLogs: ScoreLog[];
   dailyTasks: DailyTaskWithRecord[];
   yearMonth: string;
   todayIso: string;
@@ -44,16 +42,14 @@ async function loadBranchData(slug: string): Promise<BranchData | null> {
 
   const yearMonth = currentYearMonth();
   const today = new Date();
-  const [records, scoreLogs, dailyTasks] = await Promise.all([
+  const [records, dailyTasks] = await Promise.all([
     listMediaByBranch(branch.id),
-    listBranchScoreLogs(branch.id, yearMonth),
     getTasksForWidget(branch.id, today),
   ]);
 
   return {
     branch,
     records,
-    scoreLogs,
     dailyTasks,
     yearMonth,
     todayIso: today.toISOString(),
@@ -92,7 +88,7 @@ export default async function BranchPage({
 
   if (!data) notFound();
 
-  const { branch, records, scoreLogs, dailyTasks, yearMonth, todayIso } = data;
+  const { branch, records, dailyTasks, yearMonth, todayIso } = data;
 
   // 같은 location_key 를 공유하는 월별 레코드는 최신 1건만 카드로 노출.
   // 히스토리는 카드 클릭 후 수정 페이지에서 확인.
@@ -106,35 +102,27 @@ export default async function BranchPage({
     (r) => r.category !== MEDIA_CATEGORY.OFFICIAL
   );
 
-  const summary = summarizeScore(scoreLogs);
-
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <header className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-wider text-[var(--color-text-tertiary)]">
-            지점
+            관리
           </p>
           <h1 className="text-[20px] font-semibold">{branch.name}</h1>
           <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-            {yearMonth} 기준 현황
+            {yearMonth} 기준 매체 관리
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <Link
-            href={`/branches/${branch.slug}/budget`}
-            className="rounded-lg border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]"
-          >
-            예산
-          </Link>
-          <Link
-            href={`/branches/${branch.slug}/new`}
-            className="rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-          >
-            + 매체 등록
-          </Link>
-        </div>
+        <Link
+          href={`/branches/${branch.slug}/new`}
+          className="shrink-0 rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+        >
+          + 매체 등록
+        </Link>
       </header>
+
+      <BranchTabs branchSlug={branch.slug} active="manage" />
 
       <DailyTaskCard
         branchSlug={branch.slug}
@@ -160,15 +148,6 @@ export default async function BranchPage({
         />
       </Section>
 
-      <Section title="이번 달 점수">
-        <ScoreWidget
-          totalScore={summary.total}
-          updateCount={summary.updateCount}
-          discoveryCount={summary.discoveryCount}
-          barterInProgress={summary.barterInProgress}
-        />
-      </Section>
-
       {feedback ? <MicroFeedback key={feedback} message={feedback} /> : null}
     </div>
   );
@@ -187,31 +166,4 @@ function Section({
       {children}
     </section>
   );
-}
-
-function summarizeScore(logs: ScoreLog[]): {
-  total: number;
-  updateCount: number;
-  discoveryCount: number;
-  barterInProgress: boolean;
-} {
-  let total = 0;
-  let updateCount = 0;
-  let discoveryCount = 0;
-  let barterSuccessCount = 0;
-
-  for (const log of logs) {
-    total += log.score;
-    if (log.action === SCORE_ACTION.UPDATE) updateCount += 1;
-    else if (log.action === SCORE_ACTION.NEW_DISCOVERY) discoveryCount += 1;
-    else if (log.action === SCORE_ACTION.BARTER_SUCCESS) barterSuccessCount += 1;
-  }
-
-  void SCORE_CONFIG;
-  return {
-    total,
-    updateCount,
-    discoveryCount,
-    barterInProgress: barterSuccessCount === 0,
-  };
 }
