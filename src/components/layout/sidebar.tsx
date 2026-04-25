@@ -54,6 +54,7 @@ export async function Sidebar() {
       </SidebarSection>
 
       <SidebarSection label="가이드">
+        <SidebarLink href="/guide/scoring">점수 룰</SidebarLink>
         <SidebarLink href="/guide/barter-bp">바터제휴 BP</SidebarLink>
         <SidebarLink href="/guide/media">매체별 가이드</SidebarLink>
       </SidebarSection>
