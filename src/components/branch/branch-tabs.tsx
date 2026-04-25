@@ -13,7 +13,7 @@ const TABS: ReadonlyArray<{ key: Props["active"]; label: string; href: (slug: st
 
 /**
  * 지점 페이지 sub-tab. 헤더 아래에 노출.
- * 액션 페이지(/new, /records/[id]/edit)에는 노출 안 함.
+ * 액션 페이지(/discover, /new, /records/[id]/edit)에는 노출 안 함.
  */
 export function BranchTabs({ branchSlug, active }: Props) {
   return (

@@ -115,10 +115,10 @@ export default async function BranchPage({
           </p>
         </div>
         <Link
-          href={`/branches/${branch.slug}/new`}
+          href={`/branches/${branch.slug}/discover`}
           className="shrink-0 rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
         >
-          + 매체 등록
+          ✨ 신규 매체 발굴
         </Link>
       </header>
 
@@ -129,6 +129,10 @@ export default async function BranchPage({
         tasks={dailyTasks}
         todayIso={todayIso}
       />
+
+      <p className="text-[12px] text-[var(--color-text-tertiary)]">
+        💡 기존 매체는 카드를 눌러 업데이트할 수 있어요.
+      </p>
 
       <Section title="공식매체 (OOH)">
         <MediaGrid
