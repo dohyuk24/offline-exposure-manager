@@ -94,7 +94,7 @@ body {
 .discovery-feed-bar {
   background: var(--discovery-bg);
   border-bottom: 0.5px solid var(--discovery-border);
-  padding: 8px 16px;
+  padding: 12px 20px;
   display: flex;
   align-items: center;
   gap: 8px;
