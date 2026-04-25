@@ -4,7 +4,13 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 import type { Branch, MediaRecord } from "@/types";
-import { MEDIA_CATEGORY, MEDIA_STATUS, MEDIA_TYPE } from "@/types";
+import {
+  MEDIA_CATEGORY,
+  MEDIA_STATUS,
+  MEDIA_TYPE,
+  SCORE_ACTION,
+  SCORE_CONFIG,
+} from "@/types";
 import { createServerSupabase } from "@/lib/supabase/client";
 import { currentYearMonth } from "@/lib/date";
 
@@ -70,6 +76,8 @@ export async function createDesignAndFirstEventAction(
     });
   if (insertEvErr) throw insertEvErr;
 
+  const yearMonth = currentYearMonth();
+
   // 비용 → budget_logs (D-OOH 는 P-OOH 가 아니므로 누적 대상 — PR E 정책)
   if (cost > 0) {
     await supabase.from("budget_logs").insert({
@@ -77,18 +85,39 @@ export async function createDesignAndFirstEventAction(
       media_record_id: record.id,
       amount: cost,
       memo: `[D-OOH 첫 회차] ${payload.designName}`,
-      year_month: currentYearMonth(),
+      year_month: yearMonth,
     });
   }
 
+  // 점수: 신규 디자인 보너스 + 첫 회차
+  await supabase.from("score_logs").insert([
+    {
+      branch_id: branch.id,
+      media_record_id: record.id,
+      action: SCORE_ACTION.DISTRIBUTION_DESIGN_NEW,
+      score: SCORE_CONFIG.DISTRIBUTION_DESIGN_NEW,
+      year_month: yearMonth,
+    },
+    {
+      branch_id: branch.id,
+      media_record_id: record.id,
+      action: SCORE_ACTION.DISTRIBUTION_EVENT,
+      score: SCORE_CONFIG.DISTRIBUTION_EVENT,
+      year_month: yearMonth,
+    },
+  ]);
+
   revalidatePath(`/branches/${branch.slug}`);
   revalidatePath(`/branches/${branch.slug}/budget`);
+  revalidatePath(`/branches/${branch.slug}/insights`);
   revalidatePath("/branches");
   revalidatePath("/");
 
   redirect(
     `/branches/${branch.slug}?feedback=${encodeURIComponent(
-      `${payload.designName} 디자인을 ${qty.toLocaleString("ko-KR")}장 배포로 기록했어요 🎉`
+      `${payload.designName} 디자인 등록 + ${qty.toLocaleString("ko-KR")}장 배포로 +${
+        SCORE_CONFIG.DISTRIBUTION_DESIGN_NEW + SCORE_CONFIG.DISTRIBUTION_EVENT
+      }점 ✨`
     )}`
   );
 }
@@ -140,21 +169,33 @@ export async function addDistributionEventAction(
     .update({ updated_at: new Date().toISOString() })
     .eq("id", payload.recordId);
 
+  const yearMonth = currentYearMonth();
+
   if (cost > 0) {
     await supabase.from("budget_logs").insert({
       branch_id: branchId,
       media_record_id: payload.recordId,
       amount: cost,
       memo: `[D-OOH 회차 추가] ${payload.designName}`,
-      year_month: currentYearMonth(),
+      year_month: yearMonth,
     });
   }
+
+  // 점수: 회차 추가 (반복 배포 격려)
+  await supabase.from("score_logs").insert({
+    branch_id: branchId,
+    media_record_id: payload.recordId,
+    action: SCORE_ACTION.DISTRIBUTION_EVENT,
+    score: SCORE_CONFIG.DISTRIBUTION_EVENT,
+    year_month: yearMonth,
+  });
 
   revalidatePath(`/branches/${payload.branchSlug}`);
   revalidatePath(
     `/branches/${payload.branchSlug}/records/${payload.recordId}/distributions`
   );
   revalidatePath(`/branches/${payload.branchSlug}/budget`);
+  revalidatePath(`/branches/${payload.branchSlug}/insights`);
 }
 
 export type UpdateEventPayload = {
@@ -278,6 +319,15 @@ export async function deleteDistributionEventAction(
     .from("media_records")
     .update({ updated_at: new Date().toISOString() })
     .eq("id", payload.recordId);
+
+  // 점수 reversal: 회차 1건 삭제 시 -2 (게임 방지 + 대칭성)
+  await supabase.from("score_logs").insert({
+    branch_id: branchId,
+    media_record_id: payload.recordId,
+    action: SCORE_ACTION.DISTRIBUTION_EVENT,
+    score: -SCORE_CONFIG.DISTRIBUTION_EVENT,
+    year_month: currentYearMonth(),
+  });
 
   // budget_logs 재계산 (update 와 동일 로직)
   const yearMonth = currentYearMonth();

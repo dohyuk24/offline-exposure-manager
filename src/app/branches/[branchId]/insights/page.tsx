@@ -103,13 +103,15 @@ function summarizeScore(logs: ScoreLog[]): {
     total += log.score;
     if (
       log.action === SCORE_ACTION.UPDATE ||
-      log.action === SCORE_ACTION.TASK_COMPLETE
+      log.action === SCORE_ACTION.TASK_COMPLETE ||
+      log.action === SCORE_ACTION.DISTRIBUTION_EVENT
     ) {
       updateCount += 1;
     } else if (
       log.action === SCORE_ACTION.NEW_DISCOVERY ||
       log.action === SCORE_ACTION.TASK_DISCOVERY ||
-      log.action === SCORE_ACTION.BONUS_DISCOVERY
+      log.action === SCORE_ACTION.BONUS_DISCOVERY ||
+      log.action === SCORE_ACTION.DISTRIBUTION_DESIGN_NEW
     ) {
       discoveryCount += 1;
     } else if (

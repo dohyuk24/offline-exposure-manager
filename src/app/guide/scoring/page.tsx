@@ -79,6 +79,16 @@ export default function ScoringGuidePage() {
                 desc="할 일이 안 떴는데 자발적으로 신규 발굴을 등록한 경우"
                 score={SCORE_CONFIG.BONUS_ACTION}
               />
+              <ScoreRow
+                label="D-OOH 신규 디자인 등록"
+                desc="배포형 매체 새 디자인 등록 보너스 (첫 회차 +2 와 별도)"
+                score={SCORE_CONFIG.DISTRIBUTION_DESIGN_NEW}
+              />
+              <ScoreRow
+                label="D-OOH 회차 추가"
+                desc="배포형 매체 회차 1건 (반복 배포 격려). 삭제 시 동일 점수 차감"
+                score={SCORE_CONFIG.DISTRIBUTION_EVENT}
+              />
             </tbody>
           </table>
         </div>

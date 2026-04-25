@@ -71,6 +71,9 @@ export const SCORE_CONFIG = {
   TASK_BARTER_COMPLETE: 7,
   TASK_EXPIRED: -5,
   BONUS_ACTION: 5,
+  // D-OOH 배포 노력 점수
+  DISTRIBUTION_DESIGN_NEW: 3, // 신규 디자인 등록 보너스 (첫 회차와 별도)
+  DISTRIBUTION_EVENT: 2, // 회차 1건 추가 (신규/추가 무관)
 } as const;
 
 export const SCORE_ACTION = {
@@ -84,6 +87,9 @@ export const SCORE_ACTION = {
   TASK_BARTER: "task_barter",
   TASK_EXPIRED: "task_expired",
   BONUS_DISCOVERY: "bonus_discovery",
+  // D-OOH 배포 활동
+  DISTRIBUTION_DESIGN_NEW: "distribution_design_new",
+  DISTRIBUTION_EVENT: "distribution_event",
 } as const;
 export type ScoreAction = (typeof SCORE_ACTION)[keyof typeof SCORE_ACTION];
 
