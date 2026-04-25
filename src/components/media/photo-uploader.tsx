@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { createBrowserSupabase } from "@/lib/supabase/client";
 
@@ -16,10 +16,9 @@ type PhotoUploaderProps = {
 
 /**
  * 브라우저에서 Supabase Storage 로 이미지 업로드.
- * 모바일: capture="environment" 로 후면 카메라 우선 호출.
- * 데스크톱: 파일 선택창.
- *
- * 버킷: media-photos (public read)
+ * - 📷 카메라: capture="environment" 후면 카메라
+ * - 🖼 갤러리: multiple 기본 선택
+ * - 📁 파일: 시스템 피커 (iOS 카메라 회귀 대응 fallback)
  */
 export function PhotoUploader({
   value,
@@ -31,15 +30,18 @@ export function PhotoUploader({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [debugLog, setDebugLog] = useState<string[]>([]);
 
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
+  const systemRef = useRef<HTMLInputElement>(null);
+
   function log(line: string) {
     console.log("[photo-uploader]", line);
-    setDebugLog((prev) => [...prev.slice(-4), line]);
+    setDebugLog((prev) => [...prev.slice(-5), line]);
   }
 
   async function handleFileChange(
     event: React.ChangeEvent<HTMLInputElement>
   ) {
-    // 이 첫 로그가 안 찍히면 iOS 가 input onChange 자체를 발화시키지 않은 것.
     setDebugLog(["onChange 발화"]);
     const files = event.target.files;
 
@@ -57,7 +59,9 @@ export function PhotoUploader({
       const supabase = createBrowserSupabase();
 
       for (const file of Array.from(files)) {
-        log(`${file.name || "(이름 없음)"} · ${Math.round(file.size / 1024)}KB · ${file.type}`);
+        log(
+          `${file.name || "(이름 없음)"} · ${Math.round(file.size / 1024)}KB · ${file.type}`
+        );
 
         if (file.size > MAX_SIZE_MB * 1024 * 1024) {
           const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
@@ -135,6 +139,8 @@ export function PhotoUploader({
   };
 
   const busy = disabled || uploading;
+  const buttonBase =
+    "flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-[var(--color-border)] bg-white px-3 py-4 text-sm hover:bg-[var(--color-bg-tertiary)] disabled:pointer-events-none disabled:opacity-60";
 
   return (
     <div className="space-y-3">
@@ -142,48 +148,81 @@ export function PhotoUploader({
         <div className="mb-3 text-center text-sm text-[var(--color-text-tertiary)]">
           {uploading ? "업로드 중..." : "사진 추가"}
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <label
-            className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-[var(--color-border)] bg-white px-3 py-4 text-sm hover:bg-[var(--color-bg-tertiary)] ${
-              busy ? "pointer-events-none opacity-60" : ""
-            }`}
+        <div className="grid grid-cols-3 gap-2">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => cameraRef.current?.click()}
+            className={buttonBase}
           >
             <span className="text-xl" aria-hidden>
               📷
             </span>
             <span>카메라</span>
-            <input
-              type="file"
-              accept="image/*"
-              capture="environment"
-              disabled={busy}
-              onChange={handleFileChange}
-              style={srOnly}
-            />
-          </label>
-
-          <label
-            className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-[var(--color-border)] bg-white px-3 py-4 text-sm hover:bg-[var(--color-bg-tertiary)] ${
-              busy ? "pointer-events-none opacity-60" : ""
-            }`}
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => galleryRef.current?.click()}
+            className={buttonBase}
           >
             <span className="text-xl" aria-hidden>
               🖼
             </span>
             <span>갤러리</span>
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              disabled={busy}
-              onChange={handleFileChange}
-              style={srOnly}
-            />
-          </label>
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => systemRef.current?.click()}
+            className={buttonBase}
+          >
+            <span className="text-xl" aria-hidden>
+              📁
+            </span>
+            <span>파일</span>
+          </button>
         </div>
         <p className="mt-2 text-center text-[11px] text-[var(--color-text-tertiary)]">
           JPG · PNG · WebP · HEIC · 최대 {MAX_SIZE_MB}MB
         </p>
+        <p className="mt-1 text-center text-[11px] text-[var(--color-text-tertiary)]">
+          카메라가 안 되면 📁 파일 → "사진 찍기"
+        </p>
+
+        {/* 실제 input 들 — sr-only */}
+        <input
+          ref={cameraRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          disabled={busy}
+          onChange={handleFileChange}
+          style={srOnly}
+          aria-hidden="true"
+          tabIndex={-1}
+        />
+        <input
+          ref={galleryRef}
+          type="file"
+          accept="image/*"
+          multiple
+          disabled={busy}
+          onChange={handleFileChange}
+          style={srOnly}
+          aria-hidden="true"
+          tabIndex={-1}
+        />
+        <input
+          ref={systemRef}
+          type="file"
+          accept="image/*"
+          disabled={busy}
+          onChange={handleFileChange}
+          style={srOnly}
+          aria-hidden="true"
+          tabIndex={-1}
+        />
       </div>
 
       {errorMessage ? (
@@ -217,7 +256,7 @@ export function PhotoUploader({
               <button
                 type="button"
                 onClick={() => removePhoto(url)}
-                disabled={disabled || uploading}
+                disabled={busy}
                 className="absolute right-1 top-1 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-medium text-white hover:bg-black/80"
                 aria-label="사진 삭제"
               >
@@ -231,10 +270,6 @@ export function PhotoUploader({
   );
 }
 
-/**
- * 파일 확장자 추출. iOS 에서 대문자 .HEIC 로 오거나
- * 이름이 비어있을 수 있어 방어적으로 처리.
- */
 function extractExt(file: File): string {
   const fromName = file.name?.split(".").pop()?.toLowerCase();
   if (fromName && fromName !== file.name?.toLowerCase()) return fromName;
@@ -243,9 +278,6 @@ function extractExt(file: File): string {
   return fromType || "jpg";
 }
 
-/**
- * crypto.randomUUID 폴백. iOS Safari < 15.4 대응.
- */
 function randomId(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
