@@ -17,7 +17,7 @@ const DEFAULT_OPEN: Record<SectionKey, boolean> = {
   dashboard: true,
   branches: true,
   guide: false,
-  ops: false,
+  ops: true,
 };
 
 export function SidebarUI({ branches, user }: Props) {
@@ -43,7 +43,6 @@ export function SidebarUI({ branches, user }: Props) {
         isOpen={open.dashboard}
         onToggle={() => toggle("dashboard")}
       >
-        <NavItem href="/" pathname={pathname} label="전체 현황" />
         <NavItem href="/ranking" pathname={pathname} label="점수판 · 랭킹" />
         <NavItem
           href="/branches"
@@ -100,11 +99,12 @@ export function SidebarUI({ branches, user }: Props) {
       </Section>
 
       <Section
-        label="운영"
+        label="어드민"
         isOpen={open.ops}
         onToggle={() => toggle("ops")}
       >
-        <NavItem href="/admin" pathname={pathname} label="어드민" />
+        <NavItem href="/" pathname={pathname} label="전체 현황" exact />
+        <NavItem href="/admin" pathname={pathname} label="지점관리" />
       </Section>
 
       <div className="mt-auto border-t border-[var(--color-border)] pt-3">
