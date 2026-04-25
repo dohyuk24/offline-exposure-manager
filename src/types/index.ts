@@ -18,12 +18,29 @@ export const MEDIA_STATUS = {
 } as const;
 export type MediaStatus = (typeof MEDIA_STATUS)[keyof typeof MEDIA_STATUS];
 
+/**
+ * 매체 카테고리 4분류 (P/A/D/O OOH).
+ * 자세한 정의는 docs/media-category-restructure-plan.md 참고.
+ */
 export const MEDIA_CATEGORY = {
-  OFFICIAL: "공식",
-  OWNED: "자체보유",
-  UNOFFICIAL: "비공식",
+  /** Paid OOH — 비용 + 기간 단위 외부 광고 매체. (구) "공식" */
+  PAID: "P-OOH",
+  /** Affiliated OOH — 비용 대신 혜택·관계로 확보한 외부 매체. (v2 활성) */
+  AFFILIATED: "A-OOH",
+  /** Distribution OOH — 단기·고빈도 배포형 (전단지·족자). */
+  DISTRIBUTION: "D-OOH",
+  /** Owned OOH — 제작비만으로 상시·반복 활용. (구) "자체보유" */
+  OWNED: "O-OOH",
 } as const;
 export type MediaCategory = (typeof MEDIA_CATEGORY)[keyof typeof MEDIA_CATEGORY];
+
+/** UI 노출용 한글 라벨 */
+export const MEDIA_CATEGORY_LABEL: Record<MediaCategory, string> = {
+  "P-OOH": "P-OOH (유가 옥외)",
+  "A-OOH": "A-OOH (제휴)",
+  "D-OOH": "D-OOH (배포형)",
+  "O-OOH": "O-OOH (자체 보유)",
+};
 
 export const MEDIA_TYPE = {
   OOH: "OOH",

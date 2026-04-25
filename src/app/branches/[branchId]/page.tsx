@@ -95,11 +95,17 @@ export default async function BranchPage({
   const latestByLocation = groupByLocationLatest(records);
   const historyCounts = countByLocation(records);
 
-  const officialRecords = latestByLocation.filter(
-    (r) => r.category === MEDIA_CATEGORY.OFFICIAL
+  const paidRecords = latestByLocation.filter(
+    (r) => r.category === MEDIA_CATEGORY.PAID
   );
-  const ownedAndUnofficialRecords = latestByLocation.filter(
-    (r) => r.category !== MEDIA_CATEGORY.OFFICIAL
+  const ownedRecords = latestByLocation.filter(
+    (r) => r.category === MEDIA_CATEGORY.OWNED
+  );
+  const distributionRecords = latestByLocation.filter(
+    (r) => r.category === MEDIA_CATEGORY.DISTRIBUTION
+  );
+  const affiliatedRecords = latestByLocation.filter(
+    (r) => r.category === MEDIA_CATEGORY.AFFILIATED
   );
 
   return (
@@ -134,22 +140,49 @@ export default async function BranchPage({
         💡 기존 매체는 카드를 눌러 업데이트할 수 있어요.
       </p>
 
-      <Section title="공식매체 (OOH)">
+      <Section title="P-OOH (유가 옥외)">
         <MediaGrid
-          records={officialRecords}
+          records={paidRecords}
           branchSlug={branch.slug}
           historyCounts={historyCounts}
-          emptyMessage="등록된 공식매체가 없어요. 상권에서 후보를 발견하면 제안해주세요."
+          emptyMessage="등록된 유가 옥외 매체가 없어요. 상권에서 후보를 발견하면 ✨ 신규 발굴 으로 제안해주세요."
         />
       </Section>
 
-      <Section title="비공식매체 · 자체보유">
+      <Section title="O-OOH (자체 보유)">
         <MediaGrid
-          records={ownedAndUnofficialRecords}
+          records={ownedRecords}
           branchSlug={branch.slug}
           historyCounts={historyCounts}
-          emptyMessage="등록된 매체가 없어요. 새 매체를 기록해볼까요?"
+          emptyMessage="자체 보유 매체가 없어요. 우리 통제 매체(현수막·족자 등)를 등록해보세요."
         />
+      </Section>
+
+      <Section title="D-OOH (배포형)">
+        <MediaGrid
+          records={distributionRecords}
+          branchSlug={branch.slug}
+          historyCounts={historyCounts}
+          emptyMessage="배포형 매체가 없어요. 전단지·족자 배포 이력은 곧 디자인 단위 카드로 관리할 예정이에요."
+        />
+        <p className="mt-2 text-[11px] text-[var(--color-text-tertiary)]">
+          ⏳ 다음 PR 에서 디자인 단위 카드 + 배포 회차 타임라인으로 교체될 예정.
+        </p>
+      </Section>
+
+      <Section title="A-OOH (제휴)">
+        {affiliatedRecords.length > 0 ? (
+          <MediaGrid
+            records={affiliatedRecords}
+            branchSlug={branch.slug}
+            historyCounts={historyCounts}
+            emptyMessage=""
+          />
+        ) : (
+          <div className="rounded-lg border border-dashed border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-6 text-center text-sm text-[var(--color-text-tertiary)]">
+            v2 예정 — 비용 대신 혜택·관계·가치 교환으로 확보한 외부 매체.
+          </div>
+        )}
       </Section>
 
       {feedback ? <MicroFeedback key={feedback} message={feedback} /> : null}
