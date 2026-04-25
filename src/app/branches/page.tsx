@@ -65,20 +65,13 @@ function BranchSummaryCard({ branch }: { branch: BranchSummary }) {
       href={`/branches/${branch.slug}`}
       className="group flex flex-col gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-4 transition-shadow hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
     >
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="text-[15px] font-semibold text-[var(--color-text-primary)]">
-            {branch.name}
-          </p>
-          <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
-            /{branch.slug}
-          </p>
-        </div>
-        {branch.hasDiscovery ? (
-          <span className="shrink-0 rounded-full bg-[var(--discovery-bg)] px-2 py-0.5 text-[11px] font-medium text-[var(--discovery-fg)]">
-            ✨ 발굴
-          </span>
-        ) : null}
+      <div>
+        <p className="text-[15px] font-semibold text-[var(--color-text-primary)]">
+          {branch.name}
+        </p>
+        <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
+          /{branch.slug}
+        </p>
       </div>
 
       <dl className="grid grid-cols-3 gap-2 text-center text-xs">
