@@ -4,10 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-import type { Branch } from "@/types";
+import type { Branch, UserProfile } from "@/types";
 
 type Props = {
   branches: Branch[];
+  user: UserProfile | null;
 };
 
 type SectionKey = "dashboard" | "branches" | "guide" | "ops";
@@ -19,7 +20,7 @@ const DEFAULT_OPEN: Record<SectionKey, boolean> = {
   ops: false,
 };
 
-export function SidebarUI({ branches }: Props) {
+export function SidebarUI({ branches, user }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState<Record<SectionKey, boolean>>(DEFAULT_OPEN);
 
@@ -28,7 +29,7 @@ export function SidebarUI({ branches }: Props) {
   }
 
   return (
-    <aside className="hidden md:flex w-[220px] shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-2 py-4">
+    <aside className="hidden md:flex w-[220px] shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-2 py-4 min-h-screen">
       <Link
         href="/"
         className="mb-4 flex items-center gap-2 px-3 text-[15px] font-semibold text-[var(--color-text-primary)] hover:opacity-80"
@@ -105,6 +106,32 @@ export function SidebarUI({ branches }: Props) {
       >
         <NavItem href="/admin" pathname={pathname} label="어드민" />
       </Section>
+
+      <div className="mt-auto border-t border-[var(--color-border)] pt-3">
+        {user ? (
+          <div className="space-y-1 px-2">
+            <p className="truncate text-[12px] font-medium text-[var(--color-text-primary)]">
+              {user.display_name ?? user.email ?? "사용자"}
+            </p>
+            <p className="text-[10px] uppercase tracking-wide text-[var(--color-text-tertiary)]">
+              {user.role}
+            </p>
+            <Link
+              href="/auth/signout"
+              className="mt-1 inline-block text-[11px] text-[var(--color-text-tertiary)] hover:underline"
+            >
+              로그아웃
+            </Link>
+          </div>
+        ) : (
+          <Link
+            href="/login"
+            className="block rounded px-3 py-1.5 text-sm text-[var(--color-accent)] hover:bg-[var(--color-bg-tertiary)]"
+          >
+            로그인
+          </Link>
+        )}
+      </div>
     </aside>
   );
 }
