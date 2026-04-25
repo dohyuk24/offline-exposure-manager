@@ -30,24 +30,24 @@ export function ViewToggle({ basePath, preserveParams, active }: Props) {
   return (
     <div className="inline-flex items-center gap-0 overflow-hidden rounded-md border border-[var(--color-border)] bg-white text-xs">
       <Link
-        href={buildHref("card")}
-        className={`px-2.5 py-1.5 ${
-          active === "card"
-            ? "bg-[var(--color-bg-secondary)] font-medium text-[var(--color-text-primary)]"
-            : "text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
-        }`}
-      >
-        🃏 카드
-      </Link>
-      <Link
         href={buildHref("table")}
-        className={`border-l border-[var(--color-border)] px-2.5 py-1.5 ${
+        className={`px-2.5 py-1.5 ${
           active === "table"
             ? "bg-[var(--color-bg-secondary)] font-medium text-[var(--color-text-primary)]"
             : "text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
         }`}
       >
         📋 테이블
+      </Link>
+      <Link
+        href={buildHref("card")}
+        className={`border-l border-[var(--color-border)] px-2.5 py-1.5 ${
+          active === "card"
+            ? "bg-[var(--color-bg-secondary)] font-medium text-[var(--color-text-primary)]"
+            : "text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
+        }`}
+      >
+        🃏 카드
       </Link>
     </div>
   );
