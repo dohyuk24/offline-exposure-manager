@@ -162,6 +162,19 @@ create table score_logs (
   created_at timestamptz default now()
 );
 
+-- D-OOH 배포 회차 (디자인 단위 카드 = media_records, 회차 = distribution_events)
+-- 자세한 설계는 docs/media-category-restructure-plan.md
+create table distribution_events (
+  id uuid primary key default gen_random_uuid(),
+  media_record_id uuid references media_records(id) on delete cascade,
+  distributed_on date not null,
+  location_label text,
+  quantity int,
+  cost int,
+  memo text,
+  created_at timestamptz default now()
+);
+
 -- 데일리 할 일 (자세한 흐름은 docs/daily-routine-plan.md 참고)
 create table daily_tasks (
   id uuid primary key default gen_random_uuid(),

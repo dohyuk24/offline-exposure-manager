@@ -194,6 +194,17 @@ export type ScoreLog = {
   created_at: string;
 };
 
+export type DistributionEvent = {
+  id: string;
+  media_record_id: string;
+  distributed_on: string; // yyyy-mm-dd
+  location_label: string | null;
+  quantity: number | null;
+  cost: number | null;
+  memo: string | null;
+  created_at: string;
+};
+
 export type DailyTask = {
   id: string;
   branch_id: string;
