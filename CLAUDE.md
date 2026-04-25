@@ -55,42 +55,47 @@
 
 ```
 src/
-├── app/                        # Next.js App Router
-│   ├── page.tsx                # 홈 · 전체 현황
-│   ├── ranking/
-│   │   └── page.tsx            # 점수판 · 랭킹
+├── app/                                # Next.js App Router
+│   ├── page.tsx                        # 홈 · 전체 현황
+│   ├── login/                          # Slack OAuth 로그인 (PR N2)
+│   ├── auth/{callback,signout}/        # OAuth 콜백 / 사인아웃
+│   ├── ranking/                        # 점수판 · 랭킹
 │   ├── branches/
+│   │   ├── page.tsx                    # 모든 지점 그리드
 │   │   └── [branchId]/
-│   │       └── page.tsx        # 지점 페이지
+│   │       ├── page.tsx                # 관리 탭 (default)
+│   │       ├── insights/page.tsx       # 현황 탭 (점수)
+│   │       ├── budget/page.tsx         # 예산 탭
+│   │       ├── discover/page.tsx       # 신규 매체 등록 (intent=paid|owned|affiliated)
+│   │       ├── distributions/new/      # D-OOH 디자인 + 첫 회차
+│   │       ├── new/page.tsx            # 히스토리 이어가기 (?from=)
+│   │       └── records/[recordId]/
+│   │           ├── edit/               # 매체 수정
+│   │           └── distributions/      # D-OOH 회차 타임라인
 │   ├── guide/
-│   │   ├── barter-bp/page.tsx  # 바터제휴 BP (공사 중)
-│   │   └── media/page.tsx      # 매체별 가이드 (공사 중)
-│   └── admin/
-│       └── page.tsx            # 어드민
+│   │   ├── scoring/                    # 점수 룰 가이드
+│   │   ├── barter-bp/                  # (공사 중)
+│   │   └── media/                      # (공사 중)
+│   ├── admin/                          # 어드민
+│   └── api/cron/
+│       ├── generate-daily-tasks/       # 새벽 03:00 KST
+│       └── send-daily-slack/           # 평일 14:00 KST
 ├── components/
-│   ├── media/
-│   │   ├── media-card.tsx      # 갤러리 카드 컴포넌트
-│   │   ├── media-form.tsx      # 매체 등록/수정 폼
-│   │   └── media-grid.tsx      # 카드 그리드 레이아웃
-│   ├── layout/
-│   │   ├── sidebar.tsx         # 사이드바 네비게이션
-│   │   └── discovery-feed-bar.tsx  # 상단 발견 피드 배너
-│   ├── budget/
-│   │   └── budget-widget.tsx   # 예산 위젯
-│   ├── score/
-│   │   └── score-widget.tsx    # 점수 위젯
-│   └── ui/                     # 공통 UI (배지, 버튼, 토스트 등)
-│       ├── status-badge.tsx
-│       ├── micro-feedback.tsx
-│       └── wip-placeholder.tsx
+│   ├── branch/                         # 지점 페이지 탭·sub-tab·뷰토글
+│   ├── daily/                          # 오늘의 할 일 카드, 미처리 배너
+│   ├── media/                          # 카드/테이블/폼/D-OOH 카드 등
+│   ├── layout/                         # sidebar (server + ui), 모바일 탭바
+│   ├── budget/, score/                 # 위젯
+│   └── ui/                             # 공통 (배지, 토스트, placeholder)
 ├── lib/
-│   ├── supabase/
-│   │   ├── client.ts
-│   │   └── queries/            # DB 쿼리 함수
-│   └── slack/
-│       └── notify.ts           # Slack 알림 함수
-└── types/
-    └── index.ts                # 공통 타입 정의
+│   ├── auth/profile.ts                 # getCurrentUser / ensureUserProfile
+│   ├── branch-order.ts                 # 14지점 운영 정렬 상수
+│   ├── daily-tasks/                    # triggers / generate / auto-complete / actions
+│   ├── distribution/actions.ts         # D-OOH 회차 CRUD 액션
+│   ├── slack/{client,notify,daily-message}.ts   # Bot Token chat.postMessage
+│   ├── supabase/client.ts + queries/   # DB 쿼리 함수
+│   └── date.ts, format-error.ts, ...
+└── types/index.ts                      # 공통 타입·enum
 ```
 
 ---
@@ -258,34 +263,42 @@ export const SCORE_CONFIG = {
 
 ---
 
-## Slack 알림 함수 규칙
+## Slack 알림 규칙
 
-`lib/slack/notify.ts`에서 모든 Slack 알림을 중앙 관리.
+모든 Slack 발송은 `lib/slack/client.ts` 의 `postSlackMessage()` 경유 (Bot Token + chat.postMessage).
+액션별 알림은 `lib/slack/notify.ts` 함수로 분리, 데일리 발송은 `lib/slack/daily-message.ts`.
 
 ```typescript
-// 이런 식으로 함수 분리
-sendDiscoveryAlert(branch, mediaRecord)   // 신규 발굴 → 마케팅실 채널
-sendOfficialProposalAlert(branch, media)  // 공식매체 제안 → 담당자 DM
-sendReminderAlert(branch)                 // 업데이트 리마인더 → 지점 채널
+// 액션 알림 (lib/slack/notify.ts)
+sendDiscoveryAlert(branch, record)         // 신규 발굴 → 마케팅실 채널
+sendOfficialProposalAlert(branch, record)  // P-OOH 후보 제안 → 마케팅실 채널
+sendBarterSuccessAlert(branch, record)     // 바터 성사 → 마케팅실 채널
+sendReminderAlert(branch)                  // (v0 호환) → 지점 채널
+
+// 데일리 task 발송 (lib/slack/daily-message.ts)
+sendDailyTasksToAllBranches(today)         // 평일 14:00 KST cron
 ```
+
+- `SLACK_BOT_TOKEN` 필수
+- `SLACK_TEST_CHANNEL_OVERRIDE` 있으면 모든 발송이 그 채널로 강제 (v1 검증 단계)
+- 직접 `fetch(...)` 로 슬랙 호출 금지 — 항상 client/notify 경유
 
 ---
 
 ## 브랜치 전략
 
 ```
-main     ← 배포 브랜치. 직접 push 절대 금지
-dev      ← PR 머지 대상. main으로 배포 시 머지
+main     ← 배포 브랜치. PR squash merge.
   ├── feat/[기능명]    ex) feat/media-card
   ├── fix/[버그명]     ex) fix/photo-upload
-  └── chore/[작업명]  ex) chore/supabase-schema
+  └── chore/[작업명]  ex) chore/sync-docs
 ```
 
 ### 작업 순서
-1. `dev`에서 새 브랜치 생성: `git checkout -b feat/기능명`
+1. `main` 에서 새 브랜치 생성: `git checkout -b feat/기능명`
 2. 작업 후 커밋
-3. GitHub에 push → PR 생성 (→ `dev` 대상)
-4. 리뷰 후 머지
+3. GitHub push → PR 생성 (→ `main` 대상)
+4. 사용자 확인 후 squash merge (`gh pr merge --squash --delete-branch`)
 
 ### 커밋 메시지 컨벤션
 ```
@@ -314,7 +327,9 @@ docs: CLAUDE.md 기술스택 업데이트
 ## 체크리스트 — PR 올리기 전
 
 - [ ] 모바일에서 UI 확인했는가?
-- [ ] TypeScript 타입 에러 없는가? (`tsc --noEmit`)
-- [ ] 새 환경변수 추가했으면 `.env.example`에도 추가했는가?
-- [ ] Supabase 스키마 변경했으면 마이그레이션 파일 있는가?
-- [ ] Slack 알림 함수 직접 호출하지 않고 `lib/slack/notify.ts` 통하는가?
+- [ ] TypeScript 타입 에러 없는가? (`npx tsc --noEmit`)
+- [ ] 새 환경변수 추가했으면 `.env.example` 에도 추가했는가?
+- [ ] Supabase 스키마 변경했으면 마이그레이션 파일 + PR 본문에 SQL 블록 있는가?
+- [ ] Slack 발송이 `lib/slack/client.ts` 또는 `lib/slack/notify.ts` 경유하는가?
+- [ ] 점수·임계값 등 매직넘버는 `SCORE_CONFIG` / triggers.ts 상수에 있는가?
+- [ ] 새 매체 카테고리 추가했으면 `MEDIA_CATEGORY` enum + 배지 색상 + 4섹션 모두 동기화?
