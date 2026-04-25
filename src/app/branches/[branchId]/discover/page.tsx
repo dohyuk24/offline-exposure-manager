@@ -18,7 +18,12 @@ type PageProps = {
 export default async function DiscoverPage({ params, searchParams }: PageProps) {
   const { branchId } = await params;
   const { intent: intentRaw } = await searchParams;
-  const intent: DiscoverIntent = intentRaw === "owned" ? "owned" : "paid";
+  const intent: DiscoverIntent =
+    intentRaw === "owned"
+      ? "owned"
+      : intentRaw === "affiliated"
+        ? "affiliated"
+        : "paid";
 
   let branch: Branch | null = null;
   let connectionError: string | null = null;
@@ -57,11 +62,18 @@ function Header({
   slug?: string;
   intent: DiscoverIntent;
 }) {
-  const labelTop = intent === "owned" ? "O-OOH 자체 보유 등록" : "P-OOH 신규 매체 발굴";
+  const labelTop =
+    intent === "affiliated"
+      ? "A-OOH 제휴 매체 등록"
+      : intent === "owned"
+        ? "O-OOH 자체 보유 등록"
+        : "P-OOH 신규 매체 발굴";
   const subtitle =
-    intent === "owned"
-      ? "우리 통제 하의 매체(현수막·족자 등) 를 등록해요."
-      : "현장에서 바로 기록 — 사진 + 위치만 있으면 OK";
+    intent === "affiliated"
+      ? "비용 대신 혜택·관계로 확보하는 외부 매체. 제휴 조건도 함께 적어주세요."
+      : intent === "owned"
+        ? "우리 통제 하의 매체(현수막·족자 등) 를 등록해요."
+        : "현장에서 바로 기록 — 사진 + 위치만 있으면 OK";
 
   return (
     <header className="space-y-2">
