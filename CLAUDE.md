@@ -175,6 +175,26 @@ create table distribution_events (
   created_at timestamptz default now()
 );
 
+-- 사용자 권한 (자세한 설계는 docs/permissions-plan.md)
+-- 인증: Supabase Auth (Slack OAuth provider)
+create table user_profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  display_name text,
+  email text,
+  slack_user_id text,                 -- OAuth 시 자동 채움
+  role text not null default 'viewer', -- admin / manager / viewer
+  is_active boolean default true,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table user_branch_access (
+  user_id uuid references auth.users(id) on delete cascade,
+  branch_id uuid references branches(id) on delete cascade,
+  granted_at timestamptz default now(),
+  primary key (user_id, branch_id)
+);
+
 -- 데일리 할 일 (자세한 흐름은 docs/daily-routine-plan.md 참고)
 create table daily_tasks (
   id uuid primary key default gen_random_uuid(),
