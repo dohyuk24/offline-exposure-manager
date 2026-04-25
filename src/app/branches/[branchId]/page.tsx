@@ -166,7 +166,7 @@ export default async function BranchPage({
           title="P-OOH (유가 옥외)"
           cta={{
             href: `/branches/${branch.slug}/discover?intent=paid`,
-            label: "+ 발굴 등록",
+            label: "+ 등록",
           }}
         >
           <MediaGrid
@@ -183,7 +183,7 @@ export default async function BranchPage({
           title="O-OOH (자체 보유)"
           cta={{
             href: `/branches/${branch.slug}/discover?intent=owned`,
-            label: "+ 자체 보유 등록",
+            label: "+ 등록",
           }}
         >
           <MediaGrid
@@ -200,7 +200,7 @@ export default async function BranchPage({
           title="D-OOH (배포형)"
           cta={{
             href: `/branches/${branch.slug}/distributions/new`,
-            label: "+ 배포 기록",
+            label: "+ 등록",
           }}
         >
           <DistributionCardGrid designs={designs} branchSlug={branch.slug} />
@@ -212,14 +212,14 @@ export default async function BranchPage({
           title="A-OOH (제휴)"
           cta={{
             href: `/branches/${branch.slug}/discover?intent=affiliated`,
-            label: "+ 제휴 등록",
+            label: "+ 등록",
           }}
         >
           <MediaGrid
             records={affiliatedRecords}
             branchSlug={branch.slug}
             historyCounts={historyCounts}
-            emptyMessage="등록된 제휴 매체가 없어요. 비용 대신 혜택·관계로 확보한 매체를 + 제휴 등록 으로 기록해주세요."
+            emptyMessage="등록된 제휴 매체가 없어요. 비용 대신 혜택·관계로 확보한 매체를 + 등록 으로 기록해주세요."
           />
         </SectionWithCta>
       ) : null}
