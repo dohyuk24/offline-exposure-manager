@@ -73,6 +73,53 @@ export type DailyTaskWithRecord = DailyTask & {
   } | null;
 };
 
+/**
+ * 홈 마케팅실용 배너: 지점별 open task 카운트.
+ * count 0 인 지점은 결과에서 제외.
+ */
+export type BranchUnresolvedSummary = {
+  branch_id: string;
+  branch_name: string;
+  branch_slug: string;
+  count: number;
+};
+
+export async function getUnresolvedTasksByBranch(): Promise<{
+  totalCount: number;
+  byBranch: BranchUnresolvedSummary[];
+}> {
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase
+    .from("daily_tasks")
+    .select("branch_id, branches!inner(name, slug)")
+    .eq("status", DAILY_TASK_STATUS.OPEN);
+  if (error) throw error;
+
+  const map = new Map<string, BranchUnresolvedSummary>();
+  for (const row of (data ?? []) as unknown[]) {
+    const r = row as {
+      branch_id: string;
+      branches: { name: string; slug: string } | { name: string; slug: string }[];
+    };
+    const b = Array.isArray(r.branches) ? r.branches[0] : r.branches;
+    const existing = map.get(r.branch_id);
+    if (existing) {
+      existing.count += 1;
+    } else {
+      map.set(r.branch_id, {
+        branch_id: r.branch_id,
+        branch_name: b.name,
+        branch_slug: b.slug,
+        count: 1,
+      });
+    }
+  }
+
+  const byBranch = Array.from(map.values()).sort((a, b) => b.count - a.count);
+  const totalCount = byBranch.reduce((sum, b) => sum + b.count, 0);
+  return { totalCount, byBranch };
+}
+
 export async function getTasksForWidget(
   branchId: string,
   today: Date
