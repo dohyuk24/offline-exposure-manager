@@ -6,7 +6,6 @@ import { MEDIA_CATEGORY, SCORE_ACTION, SCORE_CONFIG } from "@/types";
 
 import { getBranchBySlug } from "@/lib/supabase/queries/branches";
 import { listMediaByBranch } from "@/lib/supabase/queries/media-records";
-import { getBranchBudgetUsage } from "@/lib/supabase/queries/budget-logs";
 import { listBranchScoreLogs } from "@/lib/supabase/queries/score-logs";
 import {
   getTasksForWidget,
@@ -15,7 +14,6 @@ import {
 import { currentYearMonth } from "@/lib/date";
 
 import { MediaGrid } from "@/components/media/media-grid";
-import { BudgetWidget } from "@/components/budget/budget-widget";
 import { ScoreWidget } from "@/components/score/score-widget";
 import { DailyTaskCard } from "@/components/daily/daily-task-card";
 import { ConnectionError } from "@/components/ui/connection-error";
@@ -34,7 +32,6 @@ type BranchPageProps = {
 type BranchData = {
   branch: Branch;
   records: MediaRecord[];
-  budgetUsed: number;
   scoreLogs: ScoreLog[];
   dailyTasks: DailyTaskWithRecord[];
   yearMonth: string;
@@ -47,9 +44,8 @@ async function loadBranchData(slug: string): Promise<BranchData | null> {
 
   const yearMonth = currentYearMonth();
   const today = new Date();
-  const [records, budgetUsed, scoreLogs, dailyTasks] = await Promise.all([
+  const [records, scoreLogs, dailyTasks] = await Promise.all([
     listMediaByBranch(branch.id),
-    getBranchBudgetUsage(branch.id, yearMonth),
     listBranchScoreLogs(branch.id, yearMonth),
     getTasksForWidget(branch.id, today),
   ]);
@@ -57,7 +53,6 @@ async function loadBranchData(slug: string): Promise<BranchData | null> {
   return {
     branch,
     records,
-    budgetUsed,
     scoreLogs,
     dailyTasks,
     yearMonth,
@@ -97,8 +92,7 @@ export default async function BranchPage({
 
   if (!data) notFound();
 
-  const { branch, records, budgetUsed, scoreLogs, dailyTasks, yearMonth, todayIso } =
-    data;
+  const { branch, records, scoreLogs, dailyTasks, yearMonth, todayIso } = data;
 
   // 같은 location_key 를 공유하는 월별 레코드는 최신 1건만 카드로 노출.
   // 히스토리는 카드 클릭 후 수정 페이지에서 확인.
@@ -126,12 +120,20 @@ export default async function BranchPage({
             {yearMonth} 기준 현황
           </p>
         </div>
-        <Link
-          href={`/branches/${branch.slug}/new`}
-          className="shrink-0 rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-        >
-          + 매체 등록
-        </Link>
+        <div className="flex shrink-0 items-center gap-2">
+          <Link
+            href={`/branches/${branch.slug}/budget`}
+            className="rounded-lg border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]"
+          >
+            예산
+          </Link>
+          <Link
+            href={`/branches/${branch.slug}/new`}
+            className="rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+          >
+            + 매체 등록
+          </Link>
+        </div>
       </header>
 
       <DailyTaskCard
@@ -156,10 +158,6 @@ export default async function BranchPage({
           historyCounts={historyCounts}
           emptyMessage="등록된 매체가 없어요. 새 매체를 기록해볼까요?"
         />
-      </Section>
-
-      <Section title="예산">
-        <BudgetWidget allocated={branch.budget_monthly} used={budgetUsed} />
       </Section>
 
       <Section title="이번 달 점수">
