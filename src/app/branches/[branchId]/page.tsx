@@ -8,11 +8,16 @@ import { getBranchBySlug } from "@/lib/supabase/queries/branches";
 import { listMediaByBranch } from "@/lib/supabase/queries/media-records";
 import { getBranchBudgetUsage } from "@/lib/supabase/queries/budget-logs";
 import { listBranchScoreLogs } from "@/lib/supabase/queries/score-logs";
+import {
+  getTasksForWidget,
+  type DailyTaskWithRecord,
+} from "@/lib/supabase/queries/daily-tasks";
 import { currentYearMonth } from "@/lib/date";
 
 import { MediaGrid } from "@/components/media/media-grid";
 import { BudgetWidget } from "@/components/budget/budget-widget";
 import { ScoreWidget } from "@/components/score/score-widget";
+import { DailyTaskCard } from "@/components/daily/daily-task-card";
 import { ConnectionError } from "@/components/ui/connection-error";
 import { MicroFeedback } from "@/components/ui/micro-feedback";
 import { formatError } from "@/lib/format-error";
@@ -31,7 +36,9 @@ type BranchData = {
   records: MediaRecord[];
   budgetUsed: number;
   scoreLogs: ScoreLog[];
+  dailyTasks: DailyTaskWithRecord[];
   yearMonth: string;
+  todayIso: string;
 };
 
 async function loadBranchData(slug: string): Promise<BranchData | null> {
@@ -39,13 +46,23 @@ async function loadBranchData(slug: string): Promise<BranchData | null> {
   if (!branch) return null;
 
   const yearMonth = currentYearMonth();
-  const [records, budgetUsed, scoreLogs] = await Promise.all([
+  const today = new Date();
+  const [records, budgetUsed, scoreLogs, dailyTasks] = await Promise.all([
     listMediaByBranch(branch.id),
     getBranchBudgetUsage(branch.id, yearMonth),
     listBranchScoreLogs(branch.id, yearMonth),
+    getTasksForWidget(branch.id, today),
   ]);
 
-  return { branch, records, budgetUsed, scoreLogs, yearMonth };
+  return {
+    branch,
+    records,
+    budgetUsed,
+    scoreLogs,
+    dailyTasks,
+    yearMonth,
+    todayIso: today.toISOString(),
+  };
 }
 
 export default async function BranchPage({
@@ -80,7 +97,8 @@ export default async function BranchPage({
 
   if (!data) notFound();
 
-  const { branch, records, budgetUsed, scoreLogs, yearMonth } = data;
+  const { branch, records, budgetUsed, scoreLogs, dailyTasks, yearMonth, todayIso } =
+    data;
 
   // 같은 location_key 를 공유하는 월별 레코드는 최신 1건만 카드로 노출.
   // 히스토리는 카드 클릭 후 수정 페이지에서 확인.
@@ -115,6 +133,12 @@ export default async function BranchPage({
           + 매체 등록
         </Link>
       </header>
+
+      <DailyTaskCard
+        branchSlug={branch.slug}
+        tasks={dailyTasks}
+        todayIso={todayIso}
+      />
 
       <Section title="공식매체 (OOH)">
         <MediaGrid
