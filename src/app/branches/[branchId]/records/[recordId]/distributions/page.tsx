@@ -6,6 +6,7 @@ import { getMediaRecord } from "@/lib/supabase/queries/media-records";
 import { listEventsByRecord } from "@/lib/supabase/queries/distribution-events";
 import { ConnectionError } from "@/components/ui/connection-error";
 import { DistributionEventForm } from "@/components/media/distribution-event-form";
+import { DistributionEventRow } from "@/components/media/distribution-event-row";
 import { formatError } from "@/lib/format-error";
 import { MEDIA_CATEGORY } from "@/types";
 import type { Branch, MediaRecord, DistributionEvent } from "@/types";
@@ -111,31 +112,13 @@ export default async function DistributionTimelinePage({ params }: PageProps) {
         ) : (
           <ul className="divide-y divide-[var(--color-border)] overflow-hidden rounded-lg border border-[var(--color-border)] bg-white">
             {events.map((ev) => (
-              <li key={ev.id} className="flex items-start gap-3 px-4 py-3">
-                <div className="shrink-0 text-[12px] font-medium text-[var(--color-text-secondary)]">
-                  {ev.distributed_on}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm text-[var(--color-text-primary)]">
-                    {ev.location_label || "(배포지 미기재)"}
-                    {ev.quantity ? (
-                      <span className="ml-2 text-[var(--color-text-secondary)]">
-                        · {ev.quantity.toLocaleString("ko-KR")}장
-                      </span>
-                    ) : null}
-                  </p>
-                  {ev.cost ? (
-                    <p className="mt-0.5 text-[11px] text-[var(--color-text-tertiary)]">
-                      비용 {ev.cost.toLocaleString("ko-KR")}원
-                    </p>
-                  ) : null}
-                  {ev.memo ? (
-                    <p className="mt-0.5 text-[11px] text-[var(--color-text-tertiary)]">
-                      {ev.memo}
-                    </p>
-                  ) : null}
-                </div>
-              </li>
+              <DistributionEventRow
+                key={ev.id}
+                event={ev}
+                branchSlug={branch.slug}
+                recordId={record.id}
+                designName={designName}
+              />
             ))}
           </ul>
         )}
