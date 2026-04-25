@@ -374,3 +374,92 @@ insert into distribution_events
 select id, '2026-04-15', '역세권 카페 거치', 800, 15000, '주변 카페 동의 받음'
 from media_records
 where category = 'D-OOH';
+
+-- ============================================================
+-- 5) 데일리 task 데모 (정합성 검증용)
+-- 매체 액션 → task 자동 완료 → 점수 부여 흐름을 화면에서 확인.
+-- 재실행 시 모든 daily_tasks wipe.
+-- ============================================================
+
+delete from daily_tasks;
+
+-- 5a) unofficial_update — O-OOH + 게시중 매체 (지점별 1건)
+insert into daily_tasks
+  (branch_id, task_type, related_record_id, generated_for, expires_at, status, carry_over_count)
+select distinct on (branch_id)
+  branch_id, 'unofficial_update', id,
+  current_date, current_date + interval '7 day', 'open', 0
+from media_records
+where category = 'O-OOH'
+  and status = '게시중'
+  and deleted_at is null
+order by branch_id, created_at desc;
+
+-- 5b) posting_ending — 게시중 + end_date 가까운 매체 (지점별 1건)
+insert into daily_tasks
+  (branch_id, task_type, related_record_id, generated_for, expires_at, status, carry_over_count)
+select distinct on (branch_id)
+  branch_id, 'posting_ending', id,
+  current_date, current_date + interval '7 day', 'open', 0
+from media_records
+where status = '게시중'
+  and end_date is not null
+  and deleted_at is null
+order by branch_id, end_date;
+
+-- 5c) negotiating_followup — 협의중 매체 (지점별 1건)
+insert into daily_tasks
+  (branch_id, task_type, related_record_id, generated_for, expires_at, status, carry_over_count)
+select distinct on (branch_id)
+  branch_id, 'negotiating_followup', id,
+  current_date, current_date + interval '7 day', 'open', 0
+from media_records
+where status = '협의중'
+  and deleted_at is null
+order by branch_id, created_at;
+
+-- 5d) discovery_zero — 일부 지점에 강제 (실제 트리거: 이번 달 신규 발굴 0건)
+insert into daily_tasks
+  (branch_id, task_type, related_record_id, generated_for, expires_at, status, carry_over_count)
+select id, 'discovery_zero', null,
+  current_date, current_date + interval '7 day', 'open', 0
+from branches
+where slug in ('hanti', 'magok', 'gangbyeon');
+
+-- 5e) barter_progress — 바터제휴배너 + 협의중
+insert into daily_tasks
+  (branch_id, task_type, related_record_id, generated_for, expires_at, status, carry_over_count)
+select branch_id, 'barter_progress', id,
+  current_date, current_date + interval '7 day', 'open', 0
+from media_records
+where media_type = '바터제휴배너'
+  and status = '협의중'
+  and deleted_at is null;
+
+-- 5f) carry_over 데모 — 일부 task 에 미처리 누적 (위젯 ⚠ N+1일째 미처리 배지 검증)
+update daily_tasks
+set carry_over_count = 3
+where task_type = 'unofficial_update'
+  and branch_id = (select id from branches where slug = 'samsung');
+
+update daily_tasks
+set carry_over_count = 5
+where task_type = 'posting_ending'
+  and branch_id = (select id from branches where slug = 'gwanghwamun');
+
+update daily_tasks
+set carry_over_count = 2
+where task_type = 'negotiating_followup'
+  and branch_id = (select id from branches where slug = 'pangyo');
+
+-- 5g) done 데모 — 자동 완료된 task 1건 (위젯 ☑ + '자동 완료' 배지 검증)
+insert into daily_tasks
+  (branch_id, task_type, related_record_id, generated_for, expires_at, status, carry_over_count, completed_at, completed_by)
+select branch_id, 'unofficial_update', id,
+  current_date, current_date + interval '7 day', 'done', 0,
+  current_date::timestamptz + interval '9 hours', 'auto'
+from media_records
+where branch_id = (select id from branches where slug = 'yeoksam-arc')
+  and category = 'O-OOH'
+  and status = '게시중'
+limit 1;
