@@ -6,24 +6,62 @@ import {
 } from "@/lib/supabase/queries/branches";
 import { currentYearMonth } from "@/lib/date";
 import { formatError } from "@/lib/format-error";
+import { createServerSupabase } from "@/lib/supabase/client";
 import { ConnectionError } from "@/components/ui/connection-error";
 
-export default async function RankingPage() {
-  const yearMonth = currentYearMonth();
+import { YearMonthDropdown } from "./year-month-dropdown";
+
+const YM_RE = /^\d{4}-\d{2}$/;
+
+type PageProps = {
+  searchParams: Promise<{ ym?: string }>;
+};
+
+async function listAvailableYearMonths(): Promise<string[]> {
+  try {
+    const supabase = await createServerSupabase();
+    const { data, error } = await supabase
+      .from("score_logs")
+      .select("year_month")
+      .order("year_month", { ascending: false });
+    if (error) throw error;
+    const set = new Set(
+      ((data ?? []) as { year_month: string }[]).map((r) => r.year_month)
+    );
+    return Array.from(set);
+  } catch {
+    return [];
+  }
+}
+
+export default async function RankingPage({ searchParams }: PageProps) {
+  const { ym: ymRaw } = await searchParams;
+  const today = currentYearMonth();
+  const ym = ymRaw && YM_RE.test(ymRaw) ? ymRaw : today;
 
   let summaries: BranchSummary[] = [];
   let connectionError: string | null = null;
+  let availableMonths: string[] = [];
 
   try {
-    summaries = await listBranchSummaries(yearMonth);
+    [summaries, availableMonths] = await Promise.all([
+      listBranchSummaries(ym),
+      listAvailableYearMonths(),
+    ]);
   } catch (err) {
     connectionError = formatError(err);
   }
 
+  // 옵션: 점수 기록 있는 월 + 이번 달 (없으면 추가) → 최신순
+  const optionSet = new Set(availableMonths);
+  optionSet.add(today);
+  optionSet.add(ym);
+  const monthOptions = Array.from(optionSet).sort().reverse();
+
   if (connectionError) {
     return (
       <div className="space-y-6">
-        <Header yearMonth={yearMonth} />
+        <Header yearMonth={ym} options={monthOptions} />
         <ConnectionError detail={connectionError} />
       </div>
     );
@@ -37,7 +75,7 @@ export default async function RankingPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
-      <Header yearMonth={yearMonth} />
+      <Header yearMonth={ym} options={monthOptions} />
 
       <Podium topThree={topThree} />
 
@@ -57,15 +95,24 @@ export default async function RankingPage() {
   );
 }
 
-function Header({ yearMonth }: { yearMonth: string }) {
+function Header({
+  yearMonth,
+  options,
+}: {
+  yearMonth: string;
+  options: string[];
+}) {
   return (
-    <header className="text-center">
+    <header className="relative text-center">
+      <div className="absolute right-0 top-0">
+        <YearMonthDropdown current={yearMonth} options={options} />
+      </div>
       <p className="text-xs uppercase tracking-wider text-[var(--color-text-tertiary)]">
         점수판
       </p>
       <h1 className="mt-1 text-[22px] font-semibold">{yearMonth} 랭킹</h1>
       <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-        이번 달 상위 3개 지점을 공개합니다.
+        해당 월 상위 3개 지점을 공개합니다.
       </p>
     </header>
   );
