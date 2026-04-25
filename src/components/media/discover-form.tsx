@@ -16,7 +16,7 @@ import {
   type RegisterMediaPayload,
 } from "@/app/branches/[branchId]/new/actions";
 
-export type DiscoverIntent = "paid" | "owned";
+export type DiscoverIntent = "paid" | "owned" | "affiliated";
 
 type Props = {
   branch: Branch;
@@ -28,11 +28,21 @@ type Props = {
  *
  * intent="paid" (기본): P-OOH 후보 발굴 — status=아이디어 + is_new_discovery=true
  * intent="owned": O-OOH 자체 보유 매체 등록 — status=게시중 + is_new_discovery=false
+ * intent="affiliated": A-OOH 제휴 매체 등록 — status=협의중 + 제휴 조건 항상 노출
  */
 export function DiscoverForm({ branch, intent = "paid" }: Props) {
   const isOwned = intent === "owned";
-  const targetCategory = isOwned ? MEDIA_CATEGORY.OWNED : MEDIA_CATEGORY.PAID;
-  const targetStatus = isOwned ? MEDIA_STATUS.POSTING : MEDIA_STATUS.IDEA;
+  const isAffiliated = intent === "affiliated";
+  const targetCategory = isAffiliated
+    ? MEDIA_CATEGORY.AFFILIATED
+    : isOwned
+      ? MEDIA_CATEGORY.OWNED
+      : MEDIA_CATEGORY.PAID;
+  const targetStatus = isAffiliated
+    ? MEDIA_STATUS.NEGOTIATING
+    : isOwned
+      ? MEDIA_STATUS.POSTING
+      : MEDIA_STATUS.IDEA;
   const [photos, setPhotos] = useState<string[]>([]);
   const [mediaType, setMediaType] = useState<MediaType>(MEDIA_TYPE.BANNER);
   const [description, setDescription] = useState("");
@@ -65,7 +75,7 @@ export function DiscoverForm({ branch, intent = "paid" }: Props) {
       end_date: endDate,
       cost,
       barter_condition: barterCondition,
-      is_new_discovery: !isOwned,
+      is_new_discovery: !isOwned && !isAffiliated,
       photos,
     };
 
@@ -155,13 +165,17 @@ export function DiscoverForm({ branch, intent = "paid" }: Props) {
               className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
             />
           </Row>
-          {isBarter ? (
-            <Row label="바터 조건">
+          {isBarter || isAffiliated ? (
+            <Row label={isAffiliated ? "제휴 조건" : "바터 조건"}>
               <input
                 type="text"
                 value={barterCondition}
                 onChange={(e) => setBarterCondition(e.target.value)}
-                placeholder="상호 제공 조건"
+                placeholder={
+                  isAffiliated
+                    ? "예: 상호 노출 / 무료 PT 1회 제공"
+                    : "상호 제공 조건"
+                }
                 disabled={isPending}
                 className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
               />
@@ -183,15 +197,19 @@ export function DiscoverForm({ branch, intent = "paid" }: Props) {
       >
         {isPending
           ? "등록 중..."
-          : isOwned
-            ? "📌 자체 보유 등록"
-            : "✨ 발굴 등록"}
+          : isAffiliated
+            ? "🤝 제휴 등록"
+            : isOwned
+              ? "📌 자체 보유 등록"
+              : "✨ 발굴 등록"}
       </button>
 
       <p className="text-center text-[11px] text-[var(--color-text-tertiary)]">
-        {isOwned
-          ? "O-OOH (자체 보유) · 상태=게시중 으로 자동 등록돼요. 나중에 매체 카드에서 변경 가능."
-          : "P-OOH (유가 옥외) · 상태=아이디어 로 자동 등록돼요. 나중에 매체 카드에서 카테고리·상태를 바꿀 수 있어요."}
+        {isAffiliated
+          ? "A-OOH (제휴) · 상태=협의중 으로 자동 등록돼요. 카드에서 게시중·완료로 진행 변경하세요."
+          : isOwned
+            ? "O-OOH (자체 보유) · 상태=게시중 으로 자동 등록돼요. 나중에 매체 카드에서 변경 가능."
+            : "P-OOH (유가 옥외) · 상태=아이디어 로 자동 등록돼요. 나중에 매체 카드에서 카테고리·상태를 바꿀 수 있어요."}
       </p>
     </form>
   );

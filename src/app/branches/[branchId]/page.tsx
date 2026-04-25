@@ -185,20 +185,20 @@ export default async function BranchPage({
         <DistributionCardGrid designs={designs} branchSlug={branch.slug} />
       </SectionWithCta>
 
-      <Section title="A-OOH (제휴)">
-        {affiliatedRecords.length > 0 ? (
-          <MediaGrid
-            records={affiliatedRecords}
-            branchSlug={branch.slug}
-            historyCounts={historyCounts}
-            emptyMessage=""
-          />
-        ) : (
-          <div className="rounded-lg border border-dashed border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-6 text-center text-sm text-[var(--color-text-tertiary)]">
-            v2 예정 — 비용 대신 혜택·관계·가치 교환으로 확보한 외부 매체.
-          </div>
-        )}
-      </Section>
+      <SectionWithCta
+        title="A-OOH (제휴)"
+        cta={{
+          href: `/branches/${branch.slug}/discover?intent=affiliated`,
+          label: "+ 제휴 등록",
+        }}
+      >
+        <MediaGrid
+          records={affiliatedRecords}
+          branchSlug={branch.slug}
+          historyCounts={historyCounts}
+          emptyMessage="등록된 제휴 매체가 없어요. 비용 대신 혜택·관계로 확보한 매체를 + 제휴 등록 으로 기록해주세요."
+        />
+      </SectionWithCta>
 
       {feedback ? <MicroFeedback key={feedback} message={feedback} /> : null}
     </div>
