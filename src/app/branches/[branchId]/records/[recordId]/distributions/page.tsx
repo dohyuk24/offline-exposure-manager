@@ -75,14 +75,22 @@ export default async function DistributionTimelinePage({ params }: PageProps) {
         >
           ← 지점으로 돌아가기
         </Link>
-        <div>
-          <p className="text-xs uppercase tracking-wider text-[var(--color-text-tertiary)]">
-            D-OOH 디자인 · {record.media_type}
-          </p>
-          <h1 className="text-[20px] font-semibold">{designName}</h1>
-          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-            누적 {totalQty.toLocaleString("ko-KR")}장 · {events.length}회차
-          </p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-wider text-[var(--color-text-tertiary)]">
+              D-OOH 디자인 · {record.media_type}
+            </p>
+            <h1 className="text-[20px] font-semibold">{designName}</h1>
+            <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+              누적 {totalQty.toLocaleString("ko-KR")}장 · {events.length}회차
+            </p>
+          </div>
+          <Link
+            href={`/branches/${branch.slug}/records/${record.id}/edit`}
+            className="shrink-0 rounded-md border border-[var(--color-border)] bg-white px-3 py-1.5 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]"
+          >
+            디자인 수정
+          </Link>
         </div>
       </header>
 
