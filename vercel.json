@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/generate-daily-tasks",
       "schedule": "0 18 * * *"
+    },
+    {
+      "path": "/api/cron/send-daily-slack",
+      "schedule": "0 5 * * 1-5"
     }
   ]
 }
