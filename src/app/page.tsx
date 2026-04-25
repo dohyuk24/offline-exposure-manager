@@ -8,9 +8,14 @@ import {
   getDiscoveryFeed,
   type DiscoveryFeedItem,
 } from "@/lib/supabase/queries/media-records";
+import {
+  getUnresolvedTasksByBranch,
+  type BranchUnresolvedSummary,
+} from "@/lib/supabase/queries/daily-tasks";
 import { currentYearMonth, timeAgo } from "@/lib/date";
 import { formatError } from "@/lib/format-error";
 import { ConnectionError } from "@/components/ui/connection-error";
+import { UnresolvedTasksBanner } from "@/components/daily/unresolved-tasks-banner";
 
 export default async function HomePage() {
   const yearMonth = currentYearMonth();
@@ -18,16 +23,21 @@ export default async function HomePage() {
   let summaries: BranchSummary[] = [];
   let feedItems: DiscoveryFeedItem[] = [];
   let discoveryCount = 0;
+  let unresolvedTotal = 0;
+  let unresolvedByBranch: BranchUnresolvedSummary[] = [];
   let connectionError: string | null = null;
 
   try {
-    const [s, f] = await Promise.all([
+    const [s, f, u] = await Promise.all([
       listBranchSummaries(yearMonth),
       getDiscoveryFeed(yearMonth, 5),
+      getUnresolvedTasksByBranch(),
     ]);
     summaries = s;
     feedItems = f.items;
     discoveryCount = f.totalCount;
+    unresolvedTotal = u.totalCount;
+    unresolvedByBranch = u.byBranch;
   } catch (err) {
     connectionError = formatError(err);
   }
@@ -49,6 +59,11 @@ export default async function HomePage() {
   return (
     <div className="space-y-8">
       <Header yearMonth={yearMonth} />
+
+      <UnresolvedTasksBanner
+        totalCount={unresolvedTotal}
+        byBranch={unresolvedByBranch}
+      />
 
       <section className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
         <StatCard
