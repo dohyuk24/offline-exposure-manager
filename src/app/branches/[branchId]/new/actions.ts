@@ -18,6 +18,10 @@ import {
   sendDiscoveryAlert,
   sendOfficialProposalAlert,
 } from "@/lib/slack/notify";
+import {
+  autoCompleteDiscoveryZero,
+  autoCompleteForRecord,
+} from "@/lib/daily-tasks/auto-complete";
 
 export type RegisterMediaPayload = {
   branchSlug: string;
@@ -98,23 +102,22 @@ export async function registerMediaAction(
   if (insertErr) throw insertErr;
   const record = recordRow as MediaRecord;
 
-  // 4. 점수 로그
-  let scoreAction: string = SCORE_ACTION.UPDATE;
-  let scorePoints: number = SCORE_CONFIG.UPDATE;
+  // 4. 점수 — daily task 기반 (v1)
+  // 1) 신규 발굴이면 discovery_zero task 자동 완료 시도. 없었으면 보너스 +5.
+  // 2) 등록된 매체에 걸려있던 open task (드물지만 위치 재등록 등) 자동 완료.
   if (isNewDiscovery) {
-    scoreAction = SCORE_ACTION.NEW_DISCOVERY;
-    scorePoints = SCORE_CONFIG.NEW_DISCOVERY;
-  } else if (isBarterSuccess) {
-    scoreAction = SCORE_ACTION.BARTER_SUCCESS;
-    scorePoints = SCORE_CONFIG.BARTER_SUCCESS;
+    const { completed } = await autoCompleteDiscoveryZero(branch.id);
+    if (!completed) {
+      await supabase.from("score_logs").insert({
+        branch_id: branch.id,
+        media_record_id: record.id,
+        action: SCORE_ACTION.BONUS_DISCOVERY,
+        score: SCORE_CONFIG.BONUS_ACTION,
+        year_month: yearMonth,
+      });
+    }
   }
-  await supabase.from("score_logs").insert({
-    branch_id: branch.id,
-    media_record_id: record.id,
-    action: scoreAction,
-    score: scorePoints,
-    year_month: yearMonth,
-  });
+  await autoCompleteForRecord(record);
 
   // 5. 예산 로그 (자체보유·비공식 + 비용 > 0 일 때만)
   if (

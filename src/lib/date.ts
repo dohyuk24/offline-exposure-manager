@@ -8,6 +8,28 @@ export function currentYearMonth(now: Date = new Date()): string {
   return `${year}-${month}`;
 }
 
+/** 'YYYY-MM-DD' 문자열. daily_tasks.generated_for/expires_at 포맷. */
+export function formatYmd(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${dd}`;
+}
+
+/** 날짜에 N일을 더한 새 Date. */
+export function addDays(d: Date, days: number): Date {
+  const next = new Date(d);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
+/** 두 날짜의 자정 기준 일수 차이 (b - a). */
+export function daysBetween(a: Date, b: Date): number {
+  const aDay = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+  const bDay = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
+  return Math.floor((bDay - aDay) / 86_400_000);
+}
+
 /**
  * 대략적인 "N 전" 문구. 발견 피드·알림 UI에서 사용.
  */
