@@ -10,9 +10,14 @@ import {
   getTasksForWidget,
   type DailyTaskWithRecord,
 } from "@/lib/supabase/queries/daily-tasks";
+import {
+  listDesignsForBranch,
+  type DesignSummary,
+} from "@/lib/supabase/queries/distribution-events";
 import { currentYearMonth } from "@/lib/date";
 
 import { MediaGrid } from "@/components/media/media-grid";
+import { DistributionCardGrid } from "@/components/media/distribution-card";
 import { DailyTaskCard } from "@/components/daily/daily-task-card";
 import { BranchTabs } from "@/components/branch/branch-tabs";
 import { ConnectionError } from "@/components/ui/connection-error";
@@ -31,6 +36,7 @@ type BranchPageProps = {
 type BranchData = {
   branch: Branch;
   records: MediaRecord[];
+  designs: DesignSummary[];
   dailyTasks: DailyTaskWithRecord[];
   yearMonth: string;
   todayIso: string;
@@ -42,14 +48,16 @@ async function loadBranchData(slug: string): Promise<BranchData | null> {
 
   const yearMonth = currentYearMonth();
   const today = new Date();
-  const [records, dailyTasks] = await Promise.all([
+  const [records, designs, dailyTasks] = await Promise.all([
     listMediaByBranch(branch.id),
+    listDesignsForBranch(branch.id),
     getTasksForWidget(branch.id, today),
   ]);
 
   return {
     branch,
     records,
+    designs,
     dailyTasks,
     yearMonth,
     todayIso: today.toISOString(),
@@ -88,7 +96,7 @@ export default async function BranchPage({
 
   if (!data) notFound();
 
-  const { branch, records, dailyTasks, yearMonth, todayIso } = data;
+  const { branch, records, designs, dailyTasks, yearMonth, todayIso } = data;
 
   // 같은 location_key 를 공유하는 월별 레코드는 최신 1건만 카드로 노출.
   // 히스토리는 카드 클릭 후 수정 페이지에서 확인.
@@ -100,9 +108,6 @@ export default async function BranchPage({
   );
   const ownedRecords = latestByLocation.filter(
     (r) => r.category === MEDIA_CATEGORY.OWNED
-  );
-  const distributionRecords = latestByLocation.filter(
-    (r) => r.category === MEDIA_CATEGORY.DISTRIBUTION
   );
   const affiliatedRecords = latestByLocation.filter(
     (r) => r.category === MEDIA_CATEGORY.AFFILIATED
@@ -158,17 +163,18 @@ export default async function BranchPage({
         />
       </Section>
 
-      <Section title="D-OOH (배포형)">
-        <MediaGrid
-          records={distributionRecords}
-          branchSlug={branch.slug}
-          historyCounts={historyCounts}
-          emptyMessage="배포형 매체가 없어요. 전단지·족자 배포 이력은 곧 디자인 단위 카드로 관리할 예정이에요."
-        />
-        <p className="mt-2 text-[11px] text-[var(--color-text-tertiary)]">
-          ⏳ 다음 PR 에서 디자인 단위 카드 + 배포 회차 타임라인으로 교체될 예정.
-        </p>
-      </Section>
+      <section className="space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-[15px] font-medium">D-OOH (배포형)</h2>
+          <Link
+            href={`/branches/${branch.slug}/distributions/new`}
+            className="rounded-md border border-[var(--color-border)] bg-white px-3 py-1.5 text-xs font-medium text-[var(--color-accent)] hover:bg-[var(--color-bg-secondary)]"
+          >
+            + 배포 기록
+          </Link>
+        </div>
+        <DistributionCardGrid designs={designs} branchSlug={branch.slug} />
+      </section>
 
       <Section title="A-OOH (제휴)">
         {affiliatedRecords.length > 0 ? (
