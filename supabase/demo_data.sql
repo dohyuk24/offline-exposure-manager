@@ -9,7 +9,7 @@
 -- 재실행 안전성: 실행 전 대상 테이블 데모 데이터를 모두 삭제(truncate 대신 delete) 한다.
 -- ============================================================
 
-delete from score_logs  where year_month = '2026-04';
+delete from score_logs;
 delete from budget_logs where year_month = '2026-04';
 delete from media_records
  where branch_id in (select id from branches);
@@ -305,58 +305,13 @@ insert into budget_logs (branch_id, amount, memo, year_month) values
   ((select id from branches where slug = 'hapjeong'),       20000, '상인회 배너 제작',  '2026-04');
 
 -- ============================================================
--- 3) 점수 내역 (year_month = '2026-04')
+-- 3) 점수 내역 — 시드 X
 -- ============================================================
-
-insert into score_logs (branch_id, action, score, year_month) values
-  ((select id from branches where slug = 'yeoksam-arc'),    'update', 1, '2026-04'),
-  ((select id from branches where slug = 'yeoksam-arc'),    'update', 1, '2026-04'),
-  ((select id from branches where slug = 'yeoksam-arc'),    'update', 1, '2026-04'),
-  ((select id from branches where slug = 'dogok'),          'update', 1, '2026-04'),
-  ((select id from branches where slug = 'dogok'),          'update', 1, '2026-04'),
-  ((select id from branches where slug = 'sindorim'),       'update', 1, '2026-04'),
-  ((select id from branches where slug = 'sindorim'),       'update', 1, '2026-04'),
-  ((select id from branches where slug = 'sindorim'),       'update', 1, '2026-04'),
-  ((select id from branches where slug = 'nonhyeon'),       'update', 1, '2026-04'),
-  ((select id from branches where slug = 'nonhyeon'),       'update', 1, '2026-04'),
-  ((select id from branches where slug = 'pangyo'),         'update', 1, '2026-04'),
-  ((select id from branches where slug = 'pangyo'),         'update', 1, '2026-04'),
-  ((select id from branches where slug = 'pangyo'),         'update', 1, '2026-04'),
-  ((select id from branches where slug = 'pangyo'),         'update', 1, '2026-04'),
-  ((select id from branches where slug = 'gangbyeon'),      'update', 1, '2026-04'),
-  ((select id from branches where slug = 'gangbyeon'),      'update', 1, '2026-04'),
-  ((select id from branches where slug = 'gasan'),          'update', 1, '2026-04'),
-  ((select id from branches where slug = 'gasan'),          'update', 1, '2026-04'),
-  ((select id from branches where slug = 'samsung'),        'update', 1, '2026-04'),
-  ((select id from branches where slug = 'samsung'),        'update', 1, '2026-04'),
-  ((select id from branches where slug = 'samsung'),        'update', 1, '2026-04'),
-  ((select id from branches where slug = 'gwanghwamun'),    'update', 1, '2026-04'),
-  ((select id from branches where slug = 'gwanghwamun'),    'update', 1, '2026-04'),
-  ((select id from branches where slug = 'hanti'),          'update', 1, '2026-04'),
-  ((select id from branches where slug = 'hanti'),          'update', 1, '2026-04'),
-  ((select id from branches where slug = 'hanti'),          'update', 1, '2026-04'),
-  ((select id from branches where slug = 'magok'),          'update', 1, '2026-04'),
-  ((select id from branches where slug = 'magok'),          'update', 1, '2026-04'),
-  ((select id from branches where slug = 'pangyo-venture'), 'update', 1, '2026-04'),
-  ((select id from branches where slug = 'pangyo-venture'), 'update', 1, '2026-04'),
-  ((select id from branches where slug = 'yeoksam-gfc'),    'update', 1, '2026-04'),
-  ((select id from branches where slug = 'yeoksam-gfc'),    'update', 1, '2026-04'),
-  ((select id from branches where slug = 'hapjeong'),       'update', 1, '2026-04'),
-  ((select id from branches where slug = 'hapjeong'),       'update', 1, '2026-04');
-
--- new_discovery: 신규 발굴 레코드 자동 부여
-insert into score_logs (branch_id, media_record_id, action, score, year_month)
-select branch_id, id, 'new_discovery', 5, '2026-04'
-from media_records
-where is_new_discovery = true;
-
--- barter_success: 바터제휴배너 + 게시중 + barter_condition 있는 레코드
-insert into score_logs (branch_id, media_record_id, action, score, year_month)
-select branch_id, id, 'barter_success', 7, '2026-04'
-from media_records
-where media_type = '바터제휴배너'
-  and status = '게시중'
-  and barter_condition is not null;
+-- 점수는 사용자 액션(매체 등록/수정 시 task 자동 완료, 위젯 수동 체크,
+-- 신규 매체 발굴)으로만 누적. 시드 단계에서 미리 점수를 깔지 않는다.
+-- 모든 지점 0점에서 시작. (PRD §5.2.3)
+--
+-- 시드 직후 score_logs 는 비어있어야 함. (위 §0 의 delete 로 wipe)
 
 -- ============================================================
 -- 4) D-OOH 회차 데모 (각 디자인당 2회차 — 4월 초/중)
