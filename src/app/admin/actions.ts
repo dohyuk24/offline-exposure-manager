@@ -1,9 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 import { createServerSupabase } from "@/lib/supabase/client";
 import { logoutAction } from "@/lib/auth/actions";
+import { BRANCHES_CACHE_TAG } from "@/lib/supabase/queries/branches";
 
 function slugify(input: string): string {
   return input
@@ -40,6 +41,7 @@ export async function createBranchAction(formData: FormData): Promise<void> {
   });
   if (error) throw error;
 
+  revalidateTag(BRANCHES_CACHE_TAG, "max");
   revalidatePath("/admin");
   revalidatePath("/");
 }
@@ -71,6 +73,7 @@ export async function updateBranchAction(formData: FormData): Promise<void> {
     .eq("id", id);
   if (error) throw error;
 
+  revalidateTag(BRANCHES_CACHE_TAG, "max");
   revalidatePath("/admin");
   revalidatePath("/");
 }
@@ -89,6 +92,7 @@ export async function toggleBranchActiveAction(
     .eq("id", id);
   if (error) throw error;
 
+  revalidateTag(BRANCHES_CACHE_TAG, "max");
   revalidatePath("/admin");
 }
 

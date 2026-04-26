@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 import type { Branch, MediaRecord } from "@/types";
 import {
@@ -13,6 +13,7 @@ import {
 } from "@/types";
 import { createServerSupabase } from "@/lib/supabase/client";
 import { currentYearMonth } from "@/lib/date";
+import { MEDIA_CACHE_TAG } from "@/lib/supabase/queries/media-records";
 
 export type CreateDesignAndEventPayload = {
   branchSlug: string;
@@ -116,6 +117,7 @@ export async function createDesignAndFirstEventAction(
     },
   ]);
 
+  revalidateTag(MEDIA_CACHE_TAG, "max");
   revalidatePath(`/branches/${branch.slug}`);
   revalidatePath(`/branches/${branch.slug}/budget`);
   revalidatePath(`/branches/${branch.slug}/insights`);
@@ -199,6 +201,7 @@ export async function addDistributionEventAction(
     year_month: yearMonth,
   });
 
+  revalidateTag(MEDIA_CACHE_TAG, "max");
   revalidatePath(`/branches/${payload.branchSlug}`);
   revalidatePath(
     `/branches/${payload.branchSlug}/records/${payload.recordId}/distributions`
@@ -286,6 +289,7 @@ export async function updateDistributionEventAction(
     });
   }
 
+  revalidateTag(MEDIA_CACHE_TAG, "max");
   revalidatePath(`/branches/${payload.branchSlug}`);
   revalidatePath(
     `/branches/${payload.branchSlug}/records/${payload.recordId}/distributions`
@@ -364,6 +368,7 @@ export async function deleteDistributionEventAction(
     });
   }
 
+  revalidateTag(MEDIA_CACHE_TAG, "max");
   revalidatePath(`/branches/${payload.branchSlug}`);
   revalidatePath(
     `/branches/${payload.branchSlug}/records/${payload.recordId}/distributions`

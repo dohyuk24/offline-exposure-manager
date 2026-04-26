@@ -1,29 +1,42 @@
+import { unstable_cache } from "next/cache";
+
 import type { Branch } from "@/types";
 import { createServerSupabase } from "@/lib/supabase/client";
 
-export async function getBranchBySlug(slug: string): Promise<Branch | null> {
-  const supabase = await createServerSupabase();
-  const { data, error } = await supabase
-    .from("branches")
-    .select("*")
-    .eq("slug", slug)
-    .maybeSingle();
+/** branches 테이블 캐시 — admin 수정 시 revalidateTag("branches") */
+export const BRANCHES_CACHE_TAG = "branches";
 
-  if (error) throw error;
-  return data as Branch | null;
-}
+export const getBranchBySlug = unstable_cache(
+  async (slug: string): Promise<Branch | null> => {
+    const supabase = await createServerSupabase();
+    const { data, error } = await supabase
+      .from("branches")
+      .select("*")
+      .eq("slug", slug)
+      .maybeSingle();
 
-export async function listActiveBranches(): Promise<Branch[]> {
-  const supabase = await createServerSupabase();
-  const { data, error } = await supabase
-    .from("branches")
-    .select("*")
-    .eq("is_active", true)
-    .order("name", { ascending: true });
+    if (error) throw error;
+    return data as Branch | null;
+  },
+  ["branches:by-slug"],
+  { tags: [BRANCHES_CACHE_TAG], revalidate: 3600 }
+);
 
-  if (error) throw error;
-  return (data ?? []) as Branch[];
-}
+export const listActiveBranches = unstable_cache(
+  async (): Promise<Branch[]> => {
+    const supabase = await createServerSupabase();
+    const { data, error } = await supabase
+      .from("branches")
+      .select("*")
+      .eq("is_active", true)
+      .order("name", { ascending: true });
+
+    if (error) throw error;
+    return (data ?? []) as Branch[];
+  },
+  ["branches:active"],
+  { tags: [BRANCHES_CACHE_TAG], revalidate: 3600 }
+);
 
 export type BranchSummary = Branch & {
   mediaCount: number;

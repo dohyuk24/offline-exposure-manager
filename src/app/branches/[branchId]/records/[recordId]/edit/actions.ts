@@ -1,13 +1,14 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 import type { Branch, MediaRecord } from "@/types";
 import { MEDIA_CATEGORY } from "@/types";
 import { createServerSupabase } from "@/lib/supabase/client";
 import { currentYearMonth } from "@/lib/date";
 import { autoCompleteForRecord } from "@/lib/daily-tasks/auto-complete";
+import { MEDIA_CACHE_TAG } from "@/lib/supabase/queries/media-records";
 
 export type UpdateMediaPayload = {
   recordId: string;
@@ -94,6 +95,7 @@ export async function updateMediaAction(
     });
   }
 
+  revalidateTag(MEDIA_CACHE_TAG, "max");
   revalidatePath(`/branches/${branch.slug}`);
   revalidatePath("/branches");
   revalidatePath("/");
@@ -141,6 +143,7 @@ export async function deleteMediaAction(payload: {
     .eq("media_record_id", payload.recordId)
     .eq("year_month", yearMonth);
 
+  revalidateTag(MEDIA_CACHE_TAG, "max");
   revalidatePath(`/branches/${payload.branchSlug}`);
   revalidatePath("/branches");
   revalidatePath("/");

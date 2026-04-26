@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 import type { Branch, MediaRecord } from "@/types";
 import {
@@ -13,6 +13,7 @@ import {
 } from "@/types";
 import { createServerSupabase } from "@/lib/supabase/client";
 import { currentYearMonth } from "@/lib/date";
+import { MEDIA_CACHE_TAG } from "@/lib/supabase/queries/media-records";
 import {
   sendBarterSuccessAlert,
   sendDiscoveryAlert,
@@ -163,6 +164,7 @@ export async function registerMediaAction(
   });
 
   // 8. 캐시 무효화 + 리다이렉트
+  revalidateTag(MEDIA_CACHE_TAG, "max");
   revalidatePath(`/branches/${branch.slug}`);
   revalidatePath("/branches");
   revalidatePath("/");

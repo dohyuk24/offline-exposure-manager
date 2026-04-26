@@ -1,5 +1,10 @@
+import { unstable_cache } from "next/cache";
+
 import type { MediaRecord } from "@/types";
 import { createServerSupabase } from "@/lib/supabase/client";
+
+/** media 변경 시 invalidate. 매체 등록/수정/삭제 actions 에서 revalidateTag(MEDIA_CACHE_TAG). */
+export const MEDIA_CACHE_TAG = "media";
 
 export async function listMediaByBranch(
   branchId: string
@@ -47,40 +52,46 @@ export type DiscoveryFeedItem = {
  * 홈 대시보드 · 상단 발견 피드 배너에서 사용.
  * count 는 범위 내 전체 건수, items 는 상위 limit 건.
  */
-export async function getDiscoveryFeed(
-  yearMonth: string,
-  limit = 5
-): Promise<{ items: DiscoveryFeedItem[]; totalCount: number }> {
-  const supabase = await createServerSupabase();
-  const { data, error, count } = await supabase
-    .from("media_records")
-    .select(
-      "id, media_type, description, created_at, branches!inner(name, slug)",
-      { count: "exact" }
-    )
-    .eq("is_new_discovery", true)
-    .gte("created_at", `${yearMonth}-01T00:00:00Z`)
-    .is("deleted_at", null)
-    .order("created_at", { ascending: false })
-    .limit(limit);
+export const getDiscoveryFeed = unstable_cache(
+  async (
+    yearMonth: string,
+    limit = 5
+  ): Promise<{ items: DiscoveryFeedItem[]; totalCount: number }> => {
+    const supabase = await createServerSupabase();
+    const { data, error, count } = await supabase
+      .from("media_records")
+      .select(
+        "id, media_type, description, created_at, branches!inner(name, slug)",
+        { count: "exact" }
+      )
+      .eq("is_new_discovery", true)
+      .gte("created_at", `${yearMonth}-01T00:00:00Z`)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(limit);
 
-  if (error) throw error;
+    if (error) throw error;
 
-  const items: DiscoveryFeedItem[] = (data ?? []).map((row) => {
-    const b = row.branches as unknown as { name: string; slug: string } | { name: string; slug: string }[];
-    const branch = Array.isArray(b) ? b[0] : b;
-    return {
-      record_id: (row as { id: string }).id,
-      branch_name: branch.name,
-      branch_slug: branch.slug,
-      media_type: (row as { media_type: string }).media_type,
-      description: (row as { description: string | null }).description,
-      created_at: (row as { created_at: string }).created_at,
-    };
-  });
+    const items: DiscoveryFeedItem[] = (data ?? []).map((row) => {
+      const b = row.branches as unknown as
+        | { name: string; slug: string }
+        | { name: string; slug: string }[];
+      const branch = Array.isArray(b) ? b[0] : b;
+      return {
+        record_id: (row as { id: string }).id,
+        branch_name: branch.name,
+        branch_slug: branch.slug,
+        media_type: (row as { media_type: string }).media_type,
+        description: (row as { description: string | null }).description,
+        created_at: (row as { created_at: string }).created_at,
+      };
+    });
 
-  return { items, totalCount: count ?? 0 };
-}
+    return { items, totalCount: count ?? 0 };
+  },
+  ["media:discovery-feed"],
+  { tags: [MEDIA_CACHE_TAG], revalidate: 600 }
+);
 
 export async function listMediaHistory(
   locationKey: string | null | undefined,
