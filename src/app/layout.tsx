@@ -5,6 +5,7 @@ import { TopBar } from "@/components/layout/top-bar";
 import { DiscoveryFeedBar } from "@/components/layout/discovery-feed-bar";
 import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
 import { BranchSubNav } from "@/components/branch/branch-sub-nav";
+import { ConditionalChrome } from "@/components/layout/conditional-chrome";
 
 // 모든 페이지가 cookies/Supabase 에 의존 — prerender 의미 없고
 // /_not-found 페이지에서 useSearchParams Suspense bailout 도 회피.
@@ -31,15 +32,19 @@ export default function RootLayout({
   return (
     <html lang="ko" className="h-full">
       <body className="min-h-full bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] antialiased">
-        <TopBar />
-        <Suspense fallback={null}>
-          <BranchSubNav />
-        </Suspense>
-        <DiscoveryFeedBar />
+        <ConditionalChrome
+          topBar={<TopBar />}
+          subNav={
+            <Suspense fallback={null}>
+              <BranchSubNav />
+            </Suspense>
+          }
+          feed={<DiscoveryFeedBar />}
+          tabBar={<MobileTabBar />}
+        />
         <main className="mx-auto max-w-[1400px] px-4 py-4 pb-24 md:px-8 md:py-6 md:pb-6">
           {children}
         </main>
-        <MobileTabBar />
       </body>
     </html>
   );
