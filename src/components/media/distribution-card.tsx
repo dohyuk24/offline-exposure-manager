@@ -40,7 +40,7 @@ function DesignCard({
 }) {
   const { record, totalQuantity, eventCount, lastDistributedOn } = design;
   const photo = record.photos?.[0];
-  const designName = record.description?.trim() || record.media_type;
+  const subject = record.description?.trim() ?? "";
 
   return (
     <Link
@@ -52,7 +52,7 @@ function DesignCard({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={photo}
-            alt={designName}
+            alt={record.media_type}
             className="h-full w-full object-cover"
           />
         ) : (
@@ -60,21 +60,21 @@ function DesignCard({
             (디자인 사진 없음)
           </div>
         )}
-        <span className="absolute right-2 top-2 rounded-full bg-[var(--cat-distribution-bg)] px-2 py-0.5 text-[10px] font-medium text-[var(--cat-distribution-fg)]">
-          {record.media_type}
-        </span>
       </div>
       <div className="flex flex-col gap-1 p-3">
-        <p className="line-clamp-2 text-sm font-medium text-[var(--color-text-primary)]">
-          {designName}
+        <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+          {record.media_type}
         </p>
-        <p className="text-[12px] text-[var(--color-text-secondary)]">
-          누적 {totalQuantity.toLocaleString("ko-KR")}장 · {eventCount}회차
-        </p>
+        {subject ? (
+          <p className="line-clamp-2 text-[12px] text-[var(--color-text-secondary)]">
+            {subject}
+          </p>
+        ) : null}
         <p className="text-[11px] text-[var(--color-text-tertiary)]">
-          {lastDistributedOn
-            ? `마지막 ${lastDistributedOn}`
-            : "회차 없음"}
+          {lastDistributedOn ? `마지막 ${lastDistributedOn}` : "회차 없음"}
+          {totalQuantity > 0
+            ? ` · ${totalQuantity.toLocaleString("ko-KR")}장 · ${eventCount}회`
+            : ""}
         </p>
       </div>
     </Link>
