@@ -261,12 +261,19 @@ function SectionWithCta({
         <div className="flex items-center gap-1.5">
           <h2 className="text-[15px] font-medium">{title}</h2>
           {tooltip ? (
-            <span
-              className="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-[var(--color-border)] text-[10px] text-[var(--color-text-tertiary)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-              title={tooltip}
-              aria-label={tooltip}
-            >
-              i
+            <span className="group relative inline-flex">
+              <span
+                className="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-[var(--color-border)] text-[10px] text-[var(--color-text-tertiary)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                aria-label={tooltip}
+              >
+                i
+              </span>
+              <span
+                role="tooltip"
+                className="pointer-events-none absolute left-0 top-full z-20 mt-1.5 w-[min(280px,80vw)] rounded-md border border-[var(--color-border)] bg-white p-2.5 text-[11px] leading-relaxed text-[var(--color-text-secondary)] opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
+              >
+                {tooltip}
+              </span>
             </span>
           ) : null}
         </div>
