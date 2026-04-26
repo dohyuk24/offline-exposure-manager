@@ -17,10 +17,12 @@ import { currentYearMonth } from "@/lib/date";
 export type CreateDesignAndEventPayload = {
   branchSlug: string;
   designName: string; // → media_records.description
-  mediaType: string; // 전단지 / 족자
+  mediaType: string; // 전단지 / 족자 / 게릴라 현수막 / 그 외
+  size?: string; // A5 / A4 (옵션) → media_records.size
   photo: string; // 디자인 사진 (1장)
   /* 첫 회차 */
   distributedOn: string; // yyyy-mm-dd
+  distributionMethod?: string; // 직투 / 스탠딩 — 회차 memo 앞에 prefix 로 결합
   locationLabel: string;
   quantity: string;
   cost: string;
@@ -53,6 +55,7 @@ export async function createDesignAndFirstEventAction(
       media_type: payload.mediaType || MEDIA_TYPE.LEAFLET,
       status: MEDIA_STATUS.POSTING,
       description: payload.designName,
+      size: payload.size?.trim() || null,
       photos: [payload.photo],
       is_new_discovery: false,
     })
@@ -61,9 +64,15 @@ export async function createDesignAndFirstEventAction(
   if (insertRecErr) throw insertRecErr;
   const record = recordRow as MediaRecord;
 
-  // distribution_events 1건 (첫 회차)
+  // distribution_events 1건 (첫 회차) — 배포 방식은 memo 앞에 prefix 로 결합
   const qty = parseInt(payload.quantity || "0", 10) || 0;
   const cost = parseInt(payload.cost || "0", 10) || 0;
+  const memoPrefix = payload.distributionMethod?.trim()
+    ? `[${payload.distributionMethod.trim()}]`
+    : "";
+  const memoCombined = [memoPrefix, payload.memo?.trim() || ""]
+    .filter(Boolean)
+    .join(" ");
   const { error: insertEvErr } = await supabase
     .from("distribution_events")
     .insert({
@@ -72,7 +81,7 @@ export async function createDesignAndFirstEventAction(
       location_label: payload.locationLabel || null,
       quantity: qty > 0 ? qty : null,
       cost: cost > 0 ? cost : null,
-      memo: payload.memo || null,
+      memo: memoCombined || null,
     });
   if (insertEvErr) throw insertEvErr;
 

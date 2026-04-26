@@ -28,7 +28,6 @@ export function PhotoUploader({
 }: PhotoUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [debugLog, setDebugLog] = useState<string[]>([]);
 
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
@@ -36,13 +35,11 @@ export function PhotoUploader({
 
   function log(line: string) {
     console.log("[photo-uploader]", line);
-    setDebugLog((prev) => [...prev.slice(-5), line]);
   }
 
   async function handleFileChange(
     event: React.ChangeEvent<HTMLInputElement>
   ) {
-    setDebugLog(["onChange 발화"]);
     const files = event.target.files;
 
     if (!files || files.length === 0) {
@@ -229,15 +226,6 @@ export function PhotoUploader({
         <p className="rounded-md border border-[#C4332F]/40 bg-[#FFE2DD]/40 px-3 py-2 text-xs text-[#C4332F]">
           {errorMessage}
         </p>
-      ) : null}
-
-      {debugLog.length > 0 ? (
-        <details className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-[10px] text-[var(--color-text-tertiary)]">
-          <summary className="cursor-pointer">디버그 로그 (펼치기)</summary>
-          <pre className="mt-2 whitespace-pre-wrap break-all">
-            {debugLog.join("\n")}
-          </pre>
-        </details>
       ) : null}
 
       {value.length > 0 ? (
