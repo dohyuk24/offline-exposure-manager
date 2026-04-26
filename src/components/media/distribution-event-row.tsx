@@ -36,6 +36,7 @@ export function DistributionEventRow({
   );
   const [cost, setCost] = useState(event.cost != null ? String(event.cost) : "");
   const [memo, setMemo] = useState(event.memo ?? "");
+  const [flyerTitle, setFlyerTitle] = useState(event.flyer_title ?? "");
 
   function reset() {
     setDistributedOn(event.distributed_on);
@@ -43,6 +44,7 @@ export function DistributionEventRow({
     setQuantity(event.quantity != null ? String(event.quantity) : "");
     setCost(event.cost != null ? String(event.cost) : "");
     setMemo(event.memo ?? "");
+    setFlyerTitle(event.flyer_title ?? "");
     setErrorMessage(null);
   }
 
@@ -64,6 +66,7 @@ export function DistributionEventRow({
       quantity,
       cost,
       memo,
+      flyerTitle,
     };
     startTransition(async () => {
       try {
@@ -125,6 +128,16 @@ export function DistributionEventRow({
               type="text"
               value={locationLabel}
               onChange={(e) => setLocationLabel(e.target.value)}
+              disabled={isPending}
+              className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
+            />
+          </Field>
+          <Field label="전단 제목">
+            <input
+              type="text"
+              value={flyerTitle}
+              onChange={(e) => setFlyerTitle(e.target.value)}
+              placeholder="예: 5월 회원 모집 / 그랜드 오픈 안내"
               disabled={isPending}
               className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
             />
@@ -216,6 +229,12 @@ export function DistributionEventRow({
         <p className="mt-0.5 text-sm text-[var(--color-text-primary)]">
           {event.location_label || "(배포지 미기재)"}
         </p>
+        {event.flyer_title ? (
+          <p className="mt-0.5 text-[12px] text-[var(--color-text-secondary)]">
+            <span className="text-[var(--color-text-tertiary)]">전단</span>{" "}
+            {event.flyer_title}
+          </p>
+        ) : null}
         {event.cost ? (
           <p className="mt-0.5 text-[11px] text-[var(--color-text-tertiary)]">
             비용 {event.cost.toLocaleString("ko-KR")}원

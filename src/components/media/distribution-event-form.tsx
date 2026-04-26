@@ -29,6 +29,7 @@ export function DistributionEventForm({
   const [quantity, setQuantity] = useState("");
   const [cost, setCost] = useState("");
   const [memo, setMemo] = useState("");
+  const [flyerTitle, setFlyerTitle] = useState("");
   const [open, setOpen] = useState(false);
 
   const [isPending, startTransition] = useTransition();
@@ -51,6 +52,7 @@ export function DistributionEventForm({
       quantity,
       cost,
       memo,
+      flyerTitle,
     };
 
     startTransition(async () => {
@@ -61,6 +63,7 @@ export function DistributionEventForm({
         setQuantity("");
         setCost("");
         setMemo("");
+        setFlyerTitle("");
         setOpen(false);
       } catch (err) {
         setErrorMessage(err instanceof Error ? err.message : String(err));
@@ -126,6 +129,17 @@ export function DistributionEventForm({
           value={locationLabel}
           onChange={(e) => setLocationLabel(e.target.value)}
           placeholder="예: 강남대로 일대"
+          disabled={isPending}
+          className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
+        />
+      </Field>
+
+      <Field label="전단 제목">
+        <input
+          type="text"
+          value={flyerTitle}
+          onChange={(e) => setFlyerTitle(e.target.value)}
+          placeholder="예: 5월 회원 모집 / 그랜드 오픈 안내"
           disabled={isPending}
           className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
         />

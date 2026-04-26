@@ -28,6 +28,7 @@ export type CreateDesignAndEventPayload = {
   quantity: string;
   cost: string;
   memo: string;
+  flyerTitle?: string;
 };
 
 /**
@@ -83,6 +84,7 @@ export async function createDesignAndFirstEventAction(
       quantity: qty > 0 ? qty : null,
       cost: cost > 0 ? cost : null,
       memo: memoCombined || null,
+      flyer_title: payload.flyerTitle?.trim() || null,
     });
   if (insertEvErr) throw insertEvErr;
 
@@ -142,6 +144,7 @@ export type AddEventPayload = {
   quantity: string;
   cost: string;
   memo: string;
+  flyerTitle?: string;
 };
 
 /** 기존 디자인에 회차 추가. */
@@ -171,6 +174,7 @@ export async function addDistributionEventAction(
       quantity: qty > 0 ? qty : null,
       cost: cost > 0 ? cost : null,
       memo: payload.memo || null,
+      flyer_title: payload.flyerTitle?.trim() || null,
     });
   if (insertErr) throw insertErr;
 
@@ -220,6 +224,7 @@ export type UpdateEventPayload = {
   quantity: string;
   cost: string;
   memo: string;
+  flyerTitle?: string;
 };
 
 /**
@@ -250,6 +255,7 @@ export async function updateDistributionEventAction(
       quantity: qty > 0 ? qty : null,
       cost: cost > 0 ? cost : null,
       memo: payload.memo || null,
+      flyer_title: payload.flyerTitle?.trim() || null,
     })
     .eq("id", payload.eventId)
     .eq("media_record_id", payload.recordId);
