@@ -21,6 +21,9 @@ export type DesignSummary = {
   totalQuantity: number;
   eventCount: number;
   lastDistributedOn: string | null;
+  lastEventQuantity: number | null;
+  lastEventLocation: string | null;
+  lastEventFlyerTitle: string | null;
 };
 
 /** 지점의 D-OOH 디자인 + 회차 집계. 디자인 카드 그리드용. */
@@ -43,7 +46,9 @@ export async function listDesignsForBranch(
 
   const { data: events, error: evErr } = await supabase
     .from("distribution_events")
-    .select("media_record_id, quantity, distributed_on")
+    .select(
+      "media_record_id, quantity, distributed_on, location_label, flyer_title"
+    )
     .in(
       "media_record_id",
       designs.map((r) => r.id)
@@ -54,17 +59,38 @@ export async function listDesignsForBranch(
     media_record_id: string;
     quantity: number | null;
     distributed_on: string;
+    location_label: string | null;
+    flyer_title: string | null;
   };
 
   const totals = new Map<
     string,
-    { qty: number; count: number; last: string | null }
+    {
+      qty: number;
+      count: number;
+      last: string | null;
+      lastQty: number | null;
+      lastLoc: string | null;
+      lastFlyer: string | null;
+    }
   >();
   for (const ev of (events ?? []) as EventRow[]) {
-    const e = totals.get(ev.media_record_id) ?? { qty: 0, count: 0, last: null };
+    const e = totals.get(ev.media_record_id) ?? {
+      qty: 0,
+      count: 0,
+      last: null,
+      lastQty: null,
+      lastLoc: null,
+      lastFlyer: null,
+    };
     e.qty += ev.quantity ?? 0;
     e.count += 1;
-    if (!e.last || ev.distributed_on > e.last) e.last = ev.distributed_on;
+    if (!e.last || ev.distributed_on > e.last) {
+      e.last = ev.distributed_on;
+      e.lastQty = ev.quantity ?? null;
+      e.lastLoc = ev.location_label ?? null;
+      e.lastFlyer = ev.flyer_title ?? null;
+    }
     totals.set(ev.media_record_id, e);
   }
 
@@ -75,6 +101,9 @@ export async function listDesignsForBranch(
       totalQuantity: e?.qty ?? 0,
       eventCount: e?.count ?? 0,
       lastDistributedOn: e?.last ?? null,
+      lastEventQuantity: e?.lastQty ?? null,
+      lastEventLocation: e?.lastLoc ?? null,
+      lastEventFlyerTitle: e?.lastFlyer ?? null,
     };
   });
 }

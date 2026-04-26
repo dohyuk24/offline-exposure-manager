@@ -234,6 +234,7 @@ export type DistributionEvent = {
   quantity: number | null;
   cost: number | null;
   memo: string | null;
+  flyer_title: string | null;
   created_at: string;
 };
 

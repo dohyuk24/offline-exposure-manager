@@ -41,6 +41,7 @@ export function DistributionDiscoverForm({ branch }: Props) {
   const [quantity, setQuantity] = useState("");
   const [cost, setCost] = useState("");
   const [memo, setMemo] = useState("");
+  const [flyerTitle, setFlyerTitle] = useState("");
 
   const [isPending, startTransition] = useTransition();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -75,6 +76,7 @@ export function DistributionDiscoverForm({ branch }: Props) {
       quantity,
       cost,
       memo,
+      flyerTitle: flyerTitle.trim() || designName.trim(),
     };
 
     startTransition(async () => {
@@ -174,6 +176,17 @@ export function DistributionDiscoverForm({ branch }: Props) {
           value={locationLabel}
           onChange={(e) => setLocationLabel(e.target.value)}
           placeholder="예: 강남대로 일대"
+          disabled={isPending}
+          className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
+        />
+      </Row>
+
+      <Row label="전단 제목 (옵션)">
+        <input
+          type="text"
+          value={flyerTitle}
+          onChange={(e) => setFlyerTitle(e.target.value)}
+          placeholder="비워두면 디자인 주제와 동일하게 저장돼요"
           disabled={isPending}
           className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
         />

@@ -38,9 +38,16 @@ function DesignCard({
   branchSlug: string;
   design: DesignSummary;
 }) {
-  const { record, totalQuantity, eventCount, lastDistributedOn } = design;
+  const {
+    record,
+    lastDistributedOn,
+    lastEventQuantity,
+    lastEventLocation,
+    lastEventFlyerTitle,
+  } = design;
   const photo = record.photos?.[0];
-  const subject = record.description?.trim() ?? "";
+  const lastLoc = lastEventLocation?.trim() ?? "";
+  const lastFlyer = lastEventFlyerTitle?.trim() ?? "";
 
   return (
     <Link
@@ -65,17 +72,27 @@ function DesignCard({
         <p className="text-sm font-semibold text-[var(--color-text-primary)]">
           {record.media_type}
         </p>
-        {subject ? (
-          <p className="line-clamp-2 text-[12px] text-[var(--color-text-secondary)]">
-            {subject}
+        <div className="space-y-0.5 text-[11px] text-[var(--color-text-tertiary)]">
+          <p>
+            <span className="text-[var(--color-text-secondary)]">최근 배포</span>{" "}
+            {lastDistributedOn ?? "—"}
+            {lastEventQuantity != null
+              ? ` · ${lastEventQuantity.toLocaleString("ko-KR")}장`
+              : ""}
           </p>
-        ) : null}
-        <p className="text-[11px] text-[var(--color-text-tertiary)]">
-          {lastDistributedOn ? `마지막 ${lastDistributedOn}` : "회차 없음"}
-          {totalQuantity > 0
-            ? ` · ${totalQuantity.toLocaleString("ko-KR")}장 · ${eventCount}회`
-            : ""}
-        </p>
+          {lastLoc ? (
+            <p className="line-clamp-1">
+              <span className="text-[var(--color-text-secondary)]">배포지</span>{" "}
+              {lastLoc}
+            </p>
+          ) : null}
+          {lastFlyer ? (
+            <p className="line-clamp-1">
+              <span className="text-[var(--color-text-secondary)]">전단</span>{" "}
+              {lastFlyer}
+            </p>
+          ) : null}
+        </div>
       </div>
     </Link>
   );
