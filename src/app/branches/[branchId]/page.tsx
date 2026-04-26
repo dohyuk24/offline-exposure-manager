@@ -21,7 +21,6 @@ import { MediaTable } from "@/components/media/media-table";
 import { DistributionCardGrid } from "@/components/media/distribution-card";
 import { DistributionTable } from "@/components/media/distribution-table";
 import { DailyTaskCard } from "@/components/daily/daily-task-card";
-import { BranchTabs } from "@/components/branch/branch-tabs";
 import {
   CategorySubTabs,
   parseCategoryTab,
@@ -124,7 +123,6 @@ export default async function BranchPage({
 
   return (
     <div className="space-y-6">
-      <BranchTabs branchSlug={branch.slug} active="manage" />
       <p className="text-sm text-[var(--color-text-secondary)]">
         4개 카테고리 매체를 등록·업데이트해요 · {yearMonth}
       </p>

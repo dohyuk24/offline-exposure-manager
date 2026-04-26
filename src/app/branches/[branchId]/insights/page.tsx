@@ -9,7 +9,6 @@ import { currentYearMonth } from "@/lib/date";
 import { formatError } from "@/lib/format-error";
 
 import { ScoreWidget } from "@/components/score/score-widget";
-import { BranchTabs } from "@/components/branch/branch-tabs";
 import { ConnectionError } from "@/components/ui/connection-error";
 
 type PageProps = {
@@ -48,7 +47,6 @@ export default async function BranchInsightsPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
-      <BranchTabs branchSlug={branch.slug} active="insights" />
       <p className="text-sm text-[var(--color-text-secondary)]">
         이번 달 점수와 활동 누적을 확인해요 · {yearMonth}
       </p>

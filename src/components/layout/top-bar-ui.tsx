@@ -15,13 +15,29 @@ type Props = {
   session: Session | null;
 };
 
-type NavItem = { href: string; label: string; exact?: boolean };
+type NavItem = {
+  href: string;
+  label: string;
+  isActive: (pathname: string) => boolean;
+};
 
 // 오피스 모드 (또는 비-지점 페이지) — 전체 nav
 const FULL_NAV: NavItem[] = [
-  { href: "/", label: "전체 현황", exact: true },
-  { href: "/admin", label: "어드민" },
-  { href: "/guide/scoring", label: "가이드" },
+  {
+    href: "/",
+    label: "전체 현황",
+    isActive: (p) => p === "/",
+  },
+  {
+    href: "/admin",
+    label: "어드민",
+    isActive: (p) => p === "/admin" || p.startsWith("/admin/"),
+  },
+  {
+    href: "/guide/scoring",
+    label: "가이드",
+    isActive: (p) => p.startsWith("/guide/"),
+  },
 ];
 
 export function TopBarUI({ branches, session }: Props) {
@@ -39,12 +55,24 @@ export function TopBarUI({ branches, session }: Props) {
   const isRestricted =
     contextSlug !== null && contextSlug !== OFFICE_BRANCH_SLUG;
 
+  // 지점 컨텍스트 — 매체관리 (지면/점수판/가이드 sub) + 예산관리
+  // 매체관리 active 조건: branch 페이지 (단 /budget 제외) + /guide/* (sub로 분류)
+  const branchPath = `/branches/${contextSlug}`;
+  const budgetPath = `${branchPath}/budget`;
   const navItems: NavItem[] = isRestricted
     ? [
-        { href: `/branches/${contextSlug}`, label: "매체 관리" },
         {
-          href: `/guide/scoring?from=${contextSlug}`,
-          label: "가이드",
+          href: branchPath,
+          label: "매체관리",
+          isActive: (p) =>
+            (p === branchPath ||
+              (p.startsWith(`${branchPath}/`) && !p.startsWith(budgetPath))) ||
+            p.startsWith("/guide/"),
+        },
+        {
+          href: budgetPath,
+          label: "예산관리",
+          isActive: (p) => p.startsWith(budgetPath),
         },
       ]
     : FULL_NAV;
@@ -73,9 +101,7 @@ export function TopBarUI({ branches, session }: Props) {
 
         <nav className="flex flex-1 items-center gap-1 overflow-x-auto">
           {navItems.map((item) => {
-            const isActive = item.exact
-              ? pathname === item.href
-              : pathname === item.href || pathname.startsWith(item.href + "/");
+            const isActive = item.isActive(pathname);
             return (
               <Link
                 key={item.href}
