@@ -130,7 +130,7 @@ export default async function BranchPage({
         todayIso={todayIso}
       />
 
-      <div className="flex flex-wrap items-end justify-between gap-3 -mb-3">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <CategorySubTabs
           branchSlug={branch.slug}
           active={activeCat}
