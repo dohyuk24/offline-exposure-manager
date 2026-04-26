@@ -71,6 +71,7 @@ export default async function HomePage() {
           label="활성 매체"
           value={`${totals.totalMedia}개`}
           sub={`${summaries.length}개 지점`}
+          tone="accent"
         />
         <StatCard
           label="이번 달 예산 집행"
@@ -100,17 +101,7 @@ export default async function HomePage() {
       </section>
 
       <div className="grid gap-6 md:grid-cols-[1.3fr_1fr]">
-        <Section
-          title="최근 신규 발굴"
-          action={
-            <Link
-              href="/branches"
-              className="text-xs text-[var(--color-text-tertiary)] hover:underline"
-            >
-              전체 지점 →
-            </Link>
-          }
-        >
+        <Section title="최근 신규 발굴">
           <DiscoveryList items={feedItems} />
         </Section>
 
@@ -176,20 +167,28 @@ function StatCard({
   label: string;
   value: string;
   sub?: string;
-  tone?: "default" | "warn" | "danger";
+  tone?: "default" | "warn" | "danger" | "accent";
 }) {
-  const valueColor =
+  // 좌측 컬러 보더 + 카드 본문 흰색. tone 별 의미 컬러.
+  const accent =
     tone === "danger"
-      ? "text-[#C4332F]"
+      ? { border: "#dc2626", value: "text-[#dc2626]" }
       : tone === "warn"
-        ? "text-[#9F6B53]"
-        : "text-[var(--color-text-primary)]";
+        ? { border: "#d97706", value: "text-[#d97706]" }
+        : tone === "accent"
+          ? { border: "#5b5fd6", value: "text-[var(--color-accent)]" }
+          : { border: "#10b981", value: "text-[var(--color-text-primary)]" };
   return (
-    <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-4">
-      <p className="text-[11px] uppercase tracking-wide text-[var(--color-text-tertiary)]">
+    <div
+      className="rounded-xl border border-[var(--color-border)] bg-white p-5"
+      style={{ borderLeft: `4px solid ${accent.border}` }}
+    >
+      <p className="text-[12px] font-medium text-[var(--color-text-secondary)]">
         {label}
       </p>
-      <p className={`mt-1 text-xl font-semibold ${valueColor}`}>{value}</p>
+      <p className={`mt-2 text-[28px] font-bold leading-none tabular-nums ${accent.value}`}>
+        {value}
+      </p>
       {sub ? (
         <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
           {sub}

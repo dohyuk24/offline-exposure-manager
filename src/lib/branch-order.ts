@@ -14,6 +14,7 @@
  * 14개 외 지점이 있으면 (마이그레이션 잔재 등) 배열 뒤로 이동.
  */
 export const BRANCH_DISPLAY_ORDER: readonly string[] = [
+  "office",
   "yeoksam-arc",
   "dogok",
   "sindorim",
@@ -29,6 +30,9 @@ export const BRANCH_DISPLAY_ORDER: readonly string[] = [
   "yeoksam-gfc",
   "hapjeong",
 ];
+
+/** 오피스 = 본사. 전체 권한 (모든 nav 노출). */
+export const OFFICE_BRANCH_SLUG = "office";
 
 const ORDER_INDEX: Map<string, number> = new Map(
   BRANCH_DISPLAY_ORDER.map((slug, i) => [slug, i])

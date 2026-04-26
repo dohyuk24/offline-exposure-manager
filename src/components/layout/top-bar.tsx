@@ -3,13 +3,10 @@ import { sortBranchesByDisplayOrder } from "@/lib/branch-order";
 import { getCurrentUser } from "@/lib/auth/profile";
 import type { Branch, UserProfile } from "@/types";
 
-import { SidebarUI } from "./sidebar-ui";
+import { TopBarUI } from "./top-bar-ui";
 
-/**
- * 사이드바 (서버 컴포넌트). 활성 지점 + 현재 사용자 프로필을 fetch 해서
- * 클라이언트 SidebarUI 에 prop 으로 전달.
- */
-export async function Sidebar() {
+/** 상단 navigation bar — 사이드바 대체. 지점 선택은 우측 dropdown. */
+export async function TopBar() {
   let branches: Branch[] = [];
   let user: UserProfile | null = null;
   try {
@@ -21,5 +18,5 @@ export async function Sidebar() {
     branches = [];
     user = null;
   }
-  return <SidebarUI branches={branches} user={user} />;
+  return <TopBarUI branches={branches} user={user} />;
 }
