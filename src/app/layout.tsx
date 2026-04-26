@@ -5,6 +5,7 @@ import { TopBar } from "@/components/layout/top-bar";
 import { DiscoveryFeedBar } from "@/components/layout/discovery-feed-bar";
 import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
 import { BranchSubNav } from "@/components/branch/branch-sub-nav";
+import { AdminSubNav } from "@/components/layout/admin-sub-nav";
 import { ConditionalChrome } from "@/components/layout/conditional-chrome";
 
 // 모든 페이지가 cookies/Supabase 에 의존 — prerender 의미 없고
@@ -37,6 +38,7 @@ export default function RootLayout({
           subNav={
             <Suspense fallback={null}>
               <BranchSubNav />
+              <AdminSubNav />
             </Suspense>
           }
           feed={<DiscoveryFeedBar />}

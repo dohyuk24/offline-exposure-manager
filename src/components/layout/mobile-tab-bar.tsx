@@ -11,8 +11,8 @@ type Tab = {
 
 const TABS: Tab[] = [
   { href: "/", label: "홈", icon: "🏠" },
-  { href: "/admin", label: "관리", icon: "⚙️" },
-  { href: "/guide/scoring", label: "가이드", icon: "📘" },
+  { href: "/todo", label: "to-do", icon: "✓" },
+  { href: "/admin", label: "어드민", icon: "⚙️" },
 ];
 
 /**

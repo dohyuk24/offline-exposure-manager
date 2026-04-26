@@ -38,13 +38,12 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // 지점 세션 — 자기 지점 + /guide 외 접근 차단
+  // 지점 세션 — 자기 지점 외 접근 차단 (오피스 영역: /, /admin, /guide, /todo 모두 차단)
   if (session.type === "branch") {
     const ownPath = `/branches/${session.slug}`;
     const isOwnBranch =
       pathname === ownPath || pathname.startsWith(`${ownPath}/`);
-    const isGuide = pathname.startsWith("/guide/");
-    if (!isOwnBranch && !isGuide) {
+    if (!isOwnBranch) {
       const url = req.nextUrl.clone();
       url.pathname = ownPath;
       url.search = "";

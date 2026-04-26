@@ -29,14 +29,15 @@ const FULL_NAV: NavItem[] = [
     isActive: (p) => p === "/",
   },
   {
-    href: "/admin",
-    label: "어드민",
-    isActive: (p) => p === "/admin" || p.startsWith("/admin/"),
+    href: "/todo",
+    label: "to-do 관리",
+    isActive: (p) => p.startsWith("/todo"),
   },
   {
-    href: "/guide/scoring",
-    label: "가이드",
-    isActive: (p) => p.startsWith("/guide/"),
+    href: "/admin",
+    label: "어드민",
+    isActive: (p) =>
+      p === "/admin" || p.startsWith("/admin/") || p.startsWith("/guide/"),
   },
 ];
 

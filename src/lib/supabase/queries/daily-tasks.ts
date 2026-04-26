@@ -120,6 +120,90 @@ export async function getUnresolvedTasksByBranch(): Promise<{
   return { totalCount, byBranch };
 }
 
+/**
+ * to-do 관리 페이지용: 지점별 30일 daily_tasks 집계.
+ * - 7일 일별 done 비율 (trend bar)
+ * - 30일 누적 (done / open / expired)
+ * - 이번 주 진행률 (월요일 기준)
+ */
+export type BranchTodoOverview = {
+  branch_id: string;
+  thisWeek: { done: number; total: number };
+  last30: { done: number; open: number; expired: number; total: number };
+  /** 최근 7일 (오늘 제외 X — 오늘 포함). 각 날짜별 done/total. 가장 최근이 마지막 인덱스. */
+  trend7: { date: string; done: number; total: number }[];
+};
+
+export async function getTodoOverview(
+  today: Date
+): Promise<Map<string, BranchTodoOverview>> {
+  const supabase = await createServerSupabase();
+  const since = new Date(today);
+  since.setDate(since.getDate() - 30);
+  const sinceIso = since.toISOString().slice(0, 10);
+
+  const { data, error } = await supabase
+    .from("daily_tasks")
+    .select("branch_id, status, generated_for")
+    .gte("generated_for", sinceIso);
+  if (error) throw error;
+
+  // this week: 월요일 기준
+  const dayOfWeek = today.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+  const daysFromMon = (dayOfWeek + 6) % 7;
+  const thisWeekStart = new Date(today);
+  thisWeekStart.setDate(today.getDate() - daysFromMon);
+  thisWeekStart.setHours(0, 0, 0, 0);
+  const thisWeekStartIso = thisWeekStart.toISOString().slice(0, 10);
+
+  // 7일 trend 날짜 배열 (가장 오래 → 최근)
+  const trendDates: string[] = [];
+  for (let i = 6; i >= 0; i -= 1) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    trendDates.push(d.toISOString().slice(0, 10));
+  }
+
+  type Row = {
+    branch_id: string;
+    status: string;
+    generated_for: string;
+  };
+  const rows = (data ?? []) as Row[];
+
+  const map = new Map<string, BranchTodoOverview>();
+  for (const r of rows) {
+    let entry = map.get(r.branch_id);
+    if (!entry) {
+      entry = {
+        branch_id: r.branch_id,
+        thisWeek: { done: 0, total: 0 },
+        last30: { done: 0, open: 0, expired: 0, total: 0 },
+        trend7: trendDates.map((d) => ({ date: d, done: 0, total: 0 })),
+      };
+      map.set(r.branch_id, entry);
+    }
+
+    entry.last30.total += 1;
+    if (r.status === "done") entry.last30.done += 1;
+    else if (r.status === "expired") entry.last30.expired += 1;
+    else entry.last30.open += 1;
+
+    if (r.generated_for >= thisWeekStartIso) {
+      entry.thisWeek.total += 1;
+      if (r.status === "done") entry.thisWeek.done += 1;
+    }
+
+    const trendCell = entry.trend7.find((t) => t.date === r.generated_for);
+    if (trendCell) {
+      trendCell.total += 1;
+      if (r.status === "done") trendCell.done += 1;
+    }
+  }
+
+  return map;
+}
+
 export async function getTasksForWidget(
   branchId: string,
   today: Date
