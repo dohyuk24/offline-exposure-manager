@@ -32,7 +32,6 @@ const TASK_SCORE_RULE: Record<DailyTaskType, { complete: number; expire: number 
 
 export function DailyTaskCard({ branchSlug, tasks: initial, todayIso }: Props) {
   const [tasks, setTasks] = useState<DailyTaskWithRecord[]>(initial);
-  const [openTooltip, setOpenTooltip] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const [pendingId, setPendingId] = useState<string | null>(null);
 
@@ -112,7 +111,7 @@ export function DailyTaskCard({ branchSlug, tasks: initial, todayIso }: Props) {
       </div>
 
       <div
-        className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-white"
+        className="rounded-xl border border-[var(--color-border)] bg-white"
         style={{ borderLeft: `4px solid ${borderColor}` }}
       >
         {/* KPI strip — 미처리 / 완료 / 진척 */}
@@ -151,7 +150,6 @@ export function DailyTaskCard({ branchSlug, tasks: initial, todayIso }: Props) {
             const canManual =
               TASK_MANUAL_CHECK_ALLOWED[task.task_type] && !isDone;
             const wasAuto = isDone && task.completed_by === "auto";
-            const tooltipOpen = openTooltip === task.id;
             const rule = TASK_SCORE_RULE[task.task_type];
             const carryDays = task.carry_over_count + 1;
             const isOverdue = !isDone && task.carry_over_count >= 1;
@@ -230,46 +228,34 @@ export function DailyTaskCard({ branchSlug, tasks: initial, todayIso }: Props) {
                   ) : null}
                 </div>
 
-                <div className="relative shrink-0">
+                <div className="group relative shrink-0">
                   <button
                     type="button"
-                    onClick={() =>
-                      setOpenTooltip(tooltipOpen ? null : task.id)
-                    }
-                    className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--color-border)] text-[11px] text-[var(--color-text-tertiary)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                    className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--color-border)] text-[11px] text-[var(--color-text-tertiary)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] group-hover:border-[var(--color-accent)] group-hover:text-[var(--color-accent)]"
                     aria-label="점수 룰 보기"
                   >
                     i
                   </button>
 
-                  {tooltipOpen ? (
-                    <div className="absolute right-0 top-7 z-10 w-56 rounded-md border border-[var(--color-border)] bg-white p-3 text-[11px] shadow-lg">
-                      <p className="mb-2 font-medium text-[var(--color-text-primary)]">
-                        점수 규칙
-                      </p>
-                      <div className="space-y-1 text-[var(--color-text-secondary)]">
-                        <div className="flex justify-between">
-                          <span>완료 시</span>
-                          <span className="font-medium text-[#10b981]">
-                            +{rule.complete}점
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>7일 미처리</span>
-                          <span className="font-medium text-[#dc2626]">
-                            {rule.expire}점
-                          </span>
-                        </div>
+                  <div className="pointer-events-none invisible absolute right-0 top-7 z-50 w-56 rounded-md border border-[var(--color-border)] bg-white p-3 text-[11px] opacity-0 shadow-lg transition-opacity group-hover:visible group-hover:opacity-100">
+                    <p className="mb-2 font-medium text-[var(--color-text-primary)]">
+                      점수 규칙
+                    </p>
+                    <div className="space-y-1 text-[var(--color-text-secondary)]">
+                      <div className="flex justify-between">
+                        <span>완료 시</span>
+                        <span className="font-medium text-[#10b981]">
+                          +{rule.complete}점
+                        </span>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setOpenTooltip(null)}
-                        className="mt-2 text-[10px] text-[var(--color-text-tertiary)] underline"
-                      >
-                        닫기
-                      </button>
+                      <div className="flex justify-between">
+                        <span>7일 미처리</span>
+                        <span className="font-medium text-[#dc2626]">
+                          {rule.expire}점
+                        </span>
+                      </div>
                     </div>
-                  ) : null}
+                  </div>
                 </div>
               </li>
             );
