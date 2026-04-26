@@ -64,6 +64,7 @@ export default async function HomePage() {
       <UnresolvedTasksBanner
         totalCount={unresolvedTotal}
         byBranch={unresolvedByBranch}
+        allBranches={summaries}
       />
 
       <section className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
