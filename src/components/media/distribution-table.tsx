@@ -25,29 +25,27 @@ export function DistributionTable({
 
   return (
     <div className="overflow-x-auto rounded-lg border border-[var(--color-border)] bg-white">
-      <table className="w-full min-w-[640px] table-fixed text-sm">
+      <table className="w-full min-w-[720px] table-fixed text-sm">
         <colgroup>
           <col style={{ width: 64 }} />
+          <col style={{ width: 120 }} />
           <col />
-          <col style={{ width: 88 }} />
-          <col style={{ width: 96 }} />
-          <col style={{ width: 64 }} />
           <col style={{ width: 130 }} />
+          <col style={{ width: 140 }} />
         </colgroup>
         <thead className="border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-left text-[11px] uppercase tracking-wide text-[var(--color-text-tertiary)]">
           <tr>
             <th className="px-3 py-2 font-medium">디자인</th>
-            <th className="px-3 py-2 font-medium">이름</th>
             <th className="px-3 py-2 font-medium">종류</th>
-            <th className="px-3 py-2 text-right font-medium">누적</th>
-            <th className="px-3 py-2 text-right font-medium">회차</th>
+            <th className="px-3 py-2 font-medium">주제</th>
             <th className="px-3 py-2 text-right font-medium">마지막 배포</th>
+            <th className="px-3 py-2 text-right font-medium">배포수</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[var(--color-border)]">
           {designs.map((d) => {
             const photo = d.record.photos?.[0];
-            const name = d.record.description?.trim() || d.record.media_type;
+            const subject = d.record.description?.trim() ?? "";
             const href = `/branches/${branchSlug}/records/${d.record.id}/distributions`;
             return (
               <tr
@@ -74,22 +72,28 @@ export function DistributionTable({
                   <Link
                     href={href}
                     className="block truncate font-medium text-[var(--color-text-primary)] hover:underline"
-                    title={name}
+                    title={d.record.media_type}
                   >
-                    {name}
+                    {d.record.media_type}
                   </Link>
                 </td>
-                <td className="truncate px-3 py-2 align-middle text-[var(--color-text-secondary)]">
-                  {d.record.media_type}
-                </td>
-                <td className="whitespace-nowrap px-3 py-2 text-right align-middle tabular-nums text-[var(--color-text-primary)]">
-                  {d.totalQuantity.toLocaleString("ko-KR")}장
-                </td>
-                <td className="whitespace-nowrap px-3 py-2 text-right align-middle tabular-nums text-[var(--color-text-secondary)]">
-                  {d.eventCount}
+                <td className="truncate px-3 py-2 align-middle text-[var(--color-text-secondary)]" title={subject || "—"}>
+                  {subject || "—"}
                 </td>
                 <td className="whitespace-nowrap px-3 py-2 text-right align-middle text-[var(--color-text-tertiary)]">
                   {d.lastDistributedOn ?? "—"}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2 text-right align-middle tabular-nums text-[var(--color-text-primary)]">
+                  {d.totalQuantity > 0 ? (
+                    <>
+                      {d.totalQuantity.toLocaleString("ko-KR")}장
+                      <span className="ml-1.5 text-[11px] text-[var(--color-text-tertiary)]">
+                        · {d.eventCount}회
+                      </span>
+                    </>
+                  ) : (
+                    "—"
+                  )}
                 </td>
               </tr>
             );
