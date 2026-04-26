@@ -25,14 +25,14 @@ export function DistributionTable({
 
   return (
     <div className="overflow-x-auto rounded-lg border border-[var(--color-border)] bg-white">
-      <table className="w-full min-w-[720px] table-fixed text-sm">
+      <table className="w-full min-w-[640px] table-fixed text-sm">
         <colgroup>
-          <col style={{ width: 80 }} />
+          <col style={{ width: 64 }} />
           <col />
-          <col style={{ width: 110 }} />
-          <col style={{ width: 110 }} />
+          <col style={{ width: 88 }} />
+          <col style={{ width: 96 }} />
+          <col style={{ width: 64 }} />
           <col style={{ width: 130 }} />
-          <col style={{ width: 100 }} />
         </colgroup>
         <thead className="border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-left text-[11px] uppercase tracking-wide text-[var(--color-text-tertiary)]">
           <tr>
@@ -41,7 +41,7 @@ export function DistributionTable({
             <th className="px-3 py-2 font-medium">종류</th>
             <th className="px-3 py-2 text-right font-medium">누적</th>
             <th className="px-3 py-2 text-right font-medium">회차</th>
-            <th className="px-3 py-2 text-right font-medium">마지막</th>
+            <th className="px-3 py-2 text-right font-medium">마지막 배포</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[var(--color-border)]">
@@ -61,10 +61,10 @@ export function DistributionTable({
                       <img
                         src={photo}
                         alt=""
-                        className="h-10 w-14 rounded object-cover"
+                        className="h-10 w-12 rounded object-cover"
                       />
                     ) : (
-                      <div className="flex h-10 w-14 items-center justify-center rounded bg-[var(--color-bg-secondary)] text-[10px] text-[var(--color-text-tertiary)]">
+                      <div className="flex h-10 w-12 items-center justify-center rounded bg-[var(--color-bg-secondary)] text-[10px] text-[var(--color-text-tertiary)]">
                         없음
                       </div>
                     )}
@@ -73,21 +73,22 @@ export function DistributionTable({
                 <td className="px-3 py-2 align-middle">
                   <Link
                     href={href}
-                    className="font-medium text-[var(--color-text-primary)] hover:underline"
+                    className="block truncate font-medium text-[var(--color-text-primary)] hover:underline"
+                    title={name}
                   >
                     {name}
                   </Link>
                 </td>
-                <td className="px-3 py-2 align-middle text-[var(--color-text-secondary)]">
+                <td className="truncate px-3 py-2 align-middle text-[var(--color-text-secondary)]">
                   {d.record.media_type}
                 </td>
-                <td className="px-3 py-2 text-right align-middle text-[var(--color-text-primary)]">
+                <td className="whitespace-nowrap px-3 py-2 text-right align-middle tabular-nums text-[var(--color-text-primary)]">
                   {d.totalQuantity.toLocaleString("ko-KR")}장
                 </td>
-                <td className="px-3 py-2 text-right align-middle text-[var(--color-text-secondary)]">
+                <td className="whitespace-nowrap px-3 py-2 text-right align-middle tabular-nums text-[var(--color-text-secondary)]">
                   {d.eventCount}
                 </td>
-                <td className="px-3 py-2 text-right align-middle text-[var(--color-text-tertiary)]">
+                <td className="whitespace-nowrap px-3 py-2 text-right align-middle text-[var(--color-text-tertiary)]">
                   {d.lastDistributedOn ?? "—"}
                 </td>
               </tr>
