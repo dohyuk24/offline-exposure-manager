@@ -19,32 +19,40 @@ export const MEDIA_STATUS = {
 export type MediaStatus = (typeof MEDIA_STATUS)[keyof typeof MEDIA_STATUS];
 
 /**
- * 매체 카테고리 4분류 (P/A/D/O OOH).
- * 자세한 정의는 docs/media-category-restructure-plan.md 참고.
+ * 매체 카테고리 3분류 (공식 / 배포형 / 제휴).
+ * 구 OWNED(O-OOH)는 PAID(P-OOH)에 흡수됨 — DB 마이그레이션 필요.
  */
 export const MEDIA_CATEGORY = {
-  /** Paid OOH — 비용 + 기간 단위 외부 광고 매체. (구) "공식" */
+  /** 공식매체 — 유가 옥외 + 자체보유 통합 */
   PAID: "P-OOH",
-  /** Affiliated OOH — 비용 대신 혜택·관계로 확보한 외부 매체. (v2 활성) */
+  /** 제휴매체 — 비용 대신 혜택·관계 교환 */
   AFFILIATED: "A-OOH",
-  /** Distribution OOH — 단기·고빈도 배포형 (전단지·족자). */
+  /** 배포형매체 — 전단지·족자·게릴라 현수막 등 단기 배포 */
   DISTRIBUTION: "D-OOH",
-  /** Owned OOH — 제작비만으로 상시·반복 활용. (구) "자체보유" */
-  OWNED: "O-OOH",
 } as const;
 export type MediaCategory = (typeof MEDIA_CATEGORY)[keyof typeof MEDIA_CATEGORY];
 
 /** UI 노출용 한글 라벨 */
 export const MEDIA_CATEGORY_LABEL: Record<MediaCategory, string> = {
-  "P-OOH": "P-OOH (유가 옥외)",
-  "A-OOH": "A-OOH (제휴)",
-  "D-OOH": "D-OOH (배포형)",
-  "O-OOH": "O-OOH (자체 보유)",
+  "P-OOH": "공식매체",
+  "A-OOH": "제휴매체",
+  "D-OOH": "배포형매체",
+};
+
+/** 카테고리 툴팁 설명 */
+export const MEDIA_CATEGORY_DESC: Record<MediaCategory, string> = {
+  "P-OOH":
+    "버스 정류장·지하철역 등에 위치한 광고 지면, 또는 지점이 건물·상가 등과 공식 협의하여 확보한 지면",
+  "A-OOH":
+    "비용 대신 혜택·관계·가치 교환으로 확보한 제휴 매체",
+  "D-OOH":
+    "전단지, 족자, 게릴라 현수막 등의 지점 주도 액션",
 };
 
 export const MEDIA_TYPE = {
   OOH: "OOH",
   BANNER: "현수막",
+  GUERILLA_BANNER: "게릴라 현수막",
   SCROLL: "족자",
   LEAFLET: "전단지",
   BARTER_BANNER: "바터제휴배너",

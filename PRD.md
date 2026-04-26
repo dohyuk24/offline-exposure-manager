@@ -63,16 +63,17 @@
 
 ---
 
-## 3. 매체 분류 체계 (4분류)
+## 3. 매체 분류 체계 (3분류)
 
-| 코드 | 풀네임 | 정의 | 카드 단위 | 예산 귀속 |
-|------|--------|------|-----------|-----------|
-| **P-OOH** | Paid OOH | 비용 + 기간 단위 외부 광고 (버스·지하철·빌보드 등) | 위치별 | 오피스 별도 (본 서비스 budget_logs 미포함) |
-| **A-OOH** | Affiliated OOH | 비용 대신 혜택·관계 교환 (바터제휴) | 위치별 | 지점 예산 (실비 발생 시) |
-| **D-OOH** | Distribution OOH | 단기·고빈도 배포형 (전단지·족자) | **디자인별** + 회차 누적 | 지점 예산 (인쇄·인건비) |
-| **O-OOH** | Owned OOH | 우리 통제 매체 (자체 현수막·족자 등) | 위치별 | 지점 예산 (제작비) |
+| 코드 | 라벨 | 정의 | 카드 단위 | 예산 귀속 |
+|------|------|------|-----------|-----------|
+| **P-OOH** | 공식매체 | 버스 정류장·지하철역 등 공식 광고 지면 + 지점이 건물·상가 등과 공식 협의해 확보한 지면 | 위치별 | 외부 OOH 는 오피스, 자체 제작분은 지점 예산 |
+| **D-OOH** | 배포형매체 | 전단지·족자·게릴라 현수막 등 지점 주도 배포 액션 | **디자인별** + 회차 누적 | 지점 예산 (인쇄·인건비) |
+| **A-OOH** | 제휴매체 | 비용 대신 혜택·관계·가치 교환으로 확보한 매체 | 위치별 | 지점 예산 (실비 발생 시) |
 
-### 3.1 P-OOH / O-OOH / A-OOH — 위치 단위 카드
+> 구 4분류의 O-OOH(자체보유)는 P-OOH(공식매체) 로 흡수됐다. 실데이터는 마이그레이션 SQL 로 일괄 변환.
+
+### 3.1 P-OOH / A-OOH — 위치 단위 카드
 1 카드 = 1 위치(=`location_key`). 같은 위치를 월별로 다시 등록하면 히스토리로 누적.
 
 ### 3.2 D-OOH — 디자인 단위 카드 + 회차 타임라인
@@ -92,11 +93,11 @@
 /ranking                             점수판 · 랭킹 (상위 3개 공개)
 /branches                            모든 지점 그리드
 /branches/[id]                       지점 페이지 (관리 탭, default)
-   ├─ ?cat=P-OOH|O-OOH|D-OOH|A-OOH    카테고리 sub-tab (디폴트 전체)
+   ├─ ?cat=P-OOH|D-OOH|A-OOH          카테고리 sub-tab (디폴트 전체)
    └─ ?view=card|table                 카드/테이블 토글 (디폴트 table)
 /branches/[id]/insights              지점 현황 (점수)
 /branches/[id]/budget                지점 예산 (사용 내역)
-/branches/[id]/discover              신규 매체 등록 (P/O/A intent)
+/branches/[id]/discover              신규 매체 등록 (intent=paid|affiliated)
 /branches/[id]/distributions/new     D-OOH 디자인 + 첫 회차 등록
 /branches/[id]/records/[id]/edit     매체 수정
 /branches/[id]/records/[id]/distributions   D-OOH 회차 타임라인
@@ -120,7 +121,7 @@
 
 **메인 탭**: 관리 / 현황 / 예산 (`<BranchTabs />`)
 
-**관리 탭 안 sub-tab**: 전체 / P-OOH / O-OOH / D-OOH / A-OOH (`<CategorySubTabs />`, URL `?cat=`)
+**관리 탭 안 sub-tab**: 전체 / 공식매체(P-OOH) / 배포형매체(D-OOH) / 제휴매체(A-OOH) (`<CategorySubTabs />`, URL `?cat=`)
 
 **뷰 토글**: 🃏 카드 / 📋 테이블 (디폴트 table, URL `?view=`)
 
@@ -133,10 +134,10 @@
 #### 5.1.1 매체 레코드 필드
 | 필드 | 타입 | 비고 |
 |------|------|------|
-| category | text | P-OOH / A-OOH / D-OOH / O-OOH |
-| media_type | text | OOH / 현수막 / 족자 / 전단지 / 바터제휴배너 / 기타 |
+| category | text | P-OOH(공식) / D-OOH(배포형) / A-OOH(제휴) |
+| media_type | text | OOH / 현수막 / 게릴라 현수막 / 족자 / 전단지 / 바터제휴배너 / 기타 |
 | status | text | 게시중 / 게시종료 / 협의중 / 협의실패 / 아이디어 / 미진행 / 협의완료 |
-| description | text | 위치 라벨 (P/O/A) 또는 디자인 이름 (D) |
+| description | text | 위치 라벨 (P/A) 또는 디자인 이름 (D) |
 | start_date / end_date | date | 노출 기간 |
 | cost | int | 원 단위. P-OOH 는 오피스 별도라 budget_logs 미반영 |
 | barter_condition | text | A-OOH / 바터배너 시 제휴 조건 |
@@ -148,10 +149,9 @@
 
 | 흐름 | 진입 | 자동 세팅 |
 |------|------|-----------|
-| **P-OOH 발굴** | `/discover?intent=paid` | category=P-OOH, status=아이디어, is_new_discovery=true |
-| **O-OOH 등록** | `/discover?intent=owned` | category=O-OOH, status=게시중 |
-| **A-OOH 등록** | `/discover?intent=affiliated` | category=A-OOH, status=협의중 |
-| **D-OOH 디자인 + 첫 회차** | `/distributions/new` | category=D-OOH, status=게시중 |
+| **공식매체 발굴/등록** | `/discover?intent=paid` | category=P-OOH, status=아이디어, is_new_discovery=true |
+| **제휴매체 등록** | `/discover?intent=affiliated` | category=A-OOH, status=협의중 |
+| **배포형 디자인 + 첫 회차** | `/distributions/new` | category=D-OOH, status=게시중 |
 | **히스토리 이어가기** | `/new?from=recordId` | 부모의 location_key, category, media_type 상속 |
 | **수정** | `/records/[id]/edit` | 기존 값 prefilled |
 
@@ -177,7 +177,7 @@
 
 | type | 트리거 | 자동 완료 매핑 | 수동 체크 |
 |------|--------|----------------|-----------|
-| `unofficial_update` | OWNED + 게시중 + updated_at ≥ 7일 | 매체 사진 추가 또는 status 변경 | ✅ |
+| `unofficial_update` | 공식매체(P-OOH) + 게시중 + updated_at ≥ 7일 | 매체 사진 추가 또는 status 변경 | ✅ |
 | `posting_ending` | 게시중 + end_date ≤ 오늘+3일 | status=게시종료 또는 후속 매체 등록 | ✅ |
 | `negotiating_followup` | 협의중 + 등록 ≥ 14일 | status 가 협의중 → 다른 값 | ✅ |
 | `discovery_zero` | 이번 달 신규 발굴 0건 + 오늘 ≥ 15일 | 신규 발굴 매체 1건 등록 | ❌ (자동만) |
@@ -335,10 +335,9 @@
 
 | 용어 | 정의 |
 |------|------|
-| P-OOH | Paid OOH. 비용 + 기간 단위 외부 광고 (구 "공식매체") |
-| A-OOH | Affiliated OOH. 혜택·관계 교환으로 확보한 외부 매체 (구 "비공식 + 바터제휴배너") |
-| D-OOH | Distribution OOH. 단기 배포형 (전단지·족자) (구 "비공식 + 전단지/족자") |
-| O-OOH | Owned OOH. 우리 통제 상시 매체 (구 "자체보유") |
+| P-OOH | 공식매체. 외부 OOH(버스·지하철·빌보드 등) + 지점이 건물·상가와 공식 협의해 확보한 자체 매체 (구 "공식 + 자체보유") |
+| D-OOH | 배포형매체. 전단지·족자·게릴라 현수막 등 지점 주도 배포 액션 |
+| A-OOH | 제휴매체. 비용 대신 혜택·관계·가치 교환으로 확보한 매체 |
 | 디자인 / 회차 | D-OOH 단위 — 디자인 1건 = media_records 1행, 회차 N건 = distribution_events |
 | Task / Daily Task | 시스템이 매일 새벽 자동 생성하는 "오늘의 할 일" |
 | Carry Over | Task 가 미처리 상태로 다음날 이어지는 누적 카운트 |
@@ -356,5 +355,5 @@
 - `README.md` — 프로젝트 개요
 - `docs/daily-routine-plan.md` — 데일리 task 의사결정 history
 - `docs/page-restructure-plan.md` — 지점 페이지 재구조화 history
-- `docs/media-category-restructure-plan.md` — 4분류 도입 history
+- `docs/media-category-restructure-plan.md` — 카테고리 재구조화 history (4분류 → 3분류)
 - `docs/permissions-plan.md` — 권한 시스템 설계 (부분 구현)

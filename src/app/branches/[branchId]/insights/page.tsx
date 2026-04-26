@@ -1,10 +1,17 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import type { ScoreLog } from "@/types";
 import { SCORE_ACTION } from "@/types";
 
 import { getBranchBySlug } from "@/lib/supabase/queries/branches";
-import { listBranchScoreLogs } from "@/lib/supabase/queries/score-logs";
+import {
+  listBranchScoreLogs,
+} from "@/lib/supabase/queries/score-logs";
+import {
+  listBranchSummaries,
+  type BranchSummary,
+} from "@/lib/supabase/queries/branches";
 import { currentYearMonth } from "@/lib/date";
 import { formatError } from "@/lib/format-error";
 
@@ -21,12 +28,16 @@ export default async function BranchInsightsPage({ params }: PageProps) {
 
   let branch: Awaited<ReturnType<typeof getBranchBySlug>> = null;
   let scoreLogs: ScoreLog[] = [];
+  let summaries: BranchSummary[] = [];
   let connectionError: string | null = null;
 
   try {
     branch = await getBranchBySlug(branchId);
     if (branch) {
-      scoreLogs = await listBranchScoreLogs(branch.id, yearMonth);
+      [scoreLogs, summaries] = await Promise.all([
+        listBranchScoreLogs(branch.id, yearMonth),
+        listBranchSummaries(yearMonth),
+      ]);
     }
   } catch (err) {
     connectionError = formatError(err);
@@ -35,7 +46,6 @@ export default async function BranchInsightsPage({ params }: PageProps) {
   if (connectionError) {
     return (
       <div className="space-y-6">
-        <Header branchId={branchId} />
         <ConnectionError detail={connectionError} />
       </div>
     );
@@ -45,6 +55,13 @@ export default async function BranchInsightsPage({ params }: PageProps) {
 
   const summary = summarizeScore(scoreLogs);
 
+  const sorted = [...summaries].sort(
+    (a, b) => b.monthlyScore - a.monthlyScore
+  );
+  const topThree = sorted.slice(0, 3);
+  const myRank = sorted.findIndex((s) => s.id === branch!.id) + 1;
+  const inTop3 = myRank > 0 && myRank <= 3;
+
   return (
     <div className="space-y-6">
       <p className="text-sm text-[var(--color-text-secondary)]">
@@ -52,7 +69,16 @@ export default async function BranchInsightsPage({ params }: PageProps) {
       </p>
 
       <section className="space-y-3">
-        <h2 className="text-[15px] font-medium">이번 달 점수</h2>
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-[15px] font-medium">이번 달 점수</h2>
+          {myRank > 0 ? (
+            <span className="text-xs text-[var(--color-text-tertiary)]">
+              전체 <strong className="text-[var(--color-text-secondary)]">
+                {myRank}
+              </strong>위 / {sorted.length}개 지점
+            </span>
+          ) : null}
+        </div>
         <ScoreWidget
           totalScore={summary.total}
           updateCount={summary.updateCount}
@@ -61,21 +87,76 @@ export default async function BranchInsightsPage({ params }: PageProps) {
         />
       </section>
 
-      <p className="text-center text-[11px] text-[var(--color-text-tertiary)]">
-        v2 에서 월별 추이 / 누적 점수 / 다른 지점과 비교 차트가 추가될 예정이에요.
-      </p>
+      <section className="space-y-3">
+        <h2 className="text-[15px] font-medium">이번 달 Top 3</h2>
+        <TopThreeList
+          topThree={topThree}
+          currentBranchId={branch.id}
+        />
+        {!inTop3 && myRank > 0 ? (
+          <p className="text-center text-[12px] text-[var(--color-text-tertiary)]">
+            🔥 우리 지점은 {myRank}위. Top 3 까지 {topThree[2]?.monthlyScore - summary.total}점 더 필요해요.
+          </p>
+        ) : null}
+      </section>
     </div>
   );
 }
 
-function Header({ branchId }: { branchId: string }) {
-  return (
-    <header>
-      <p className="text-xs uppercase tracking-wider text-[var(--color-text-tertiary)]">
-        현황
+const MEDAL = ["🥇", "🥈", "🥉"];
+
+function TopThreeList({
+  topThree,
+  currentBranchId,
+}: {
+  topThree: BranchSummary[];
+  currentBranchId: string;
+}) {
+  if (topThree.length === 0) {
+    return (
+      <p className="rounded-lg border border-dashed border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-6 text-center text-sm text-[var(--color-text-tertiary)]">
+        데이터가 없어요.
       </p>
-      <h1 className="text-[20px] font-semibold">{branchId}</h1>
-    </header>
+    );
+  }
+  return (
+    <ol className="space-y-2">
+      {topThree.map((b, i) => {
+        const isMine = b.id === currentBranchId;
+        return (
+          <li
+            key={b.id}
+            className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 ${
+              isMine
+                ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)]"
+                : "border-[var(--color-border)] bg-white"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-lg" aria-hidden>
+                {MEDAL[i]}
+              </span>
+              <Link
+                href={`/branches/${b.slug}`}
+                className={`text-sm font-medium hover:underline ${
+                  isMine ? "text-[var(--color-accent)]" : ""
+                }`}
+              >
+                {b.name}
+                {isMine ? " (우리 지점)" : ""}
+              </Link>
+            </div>
+            <span
+              className={`text-sm font-semibold tabular-nums ${
+                isMine ? "text-[var(--color-accent)]" : ""
+              }`}
+            >
+              {b.monthlyScore}점
+            </span>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 

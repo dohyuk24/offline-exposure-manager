@@ -114,9 +114,6 @@ export default async function BranchPage({
   const paidRecords = latestByLocation.filter(
     (r) => r.category === MEDIA_CATEGORY.PAID
   );
-  const ownedRecords = latestByLocation.filter(
-    (r) => r.category === MEDIA_CATEGORY.OWNED
-  );
   const affiliatedRecords = latestByLocation.filter(
     (r) => r.category === MEDIA_CATEGORY.AFFILIATED
   );
@@ -124,7 +121,7 @@ export default async function BranchPage({
   return (
     <div className="space-y-6">
       <p className="text-sm text-[var(--color-text-secondary)]">
-        4개 카테고리 매체를 등록·업데이트해요 · {yearMonth}
+        공식·배포형·제휴 매체를 등록·업데이트해요 · {yearMonth}
       </p>
 
       <DailyTaskCard
@@ -139,7 +136,6 @@ export default async function BranchPage({
           active={activeCat}
           counts={{
             [MEDIA_CATEGORY.PAID]: paidRecords.length,
-            [MEDIA_CATEGORY.OWNED]: ownedRecords.length,
             [MEDIA_CATEGORY.DISTRIBUTION]: designs.length,
             [MEDIA_CATEGORY.AFFILIATED]: affiliatedRecords.length,
           }}
@@ -159,7 +155,8 @@ export default async function BranchPage({
 
       {activeCat === "all" || activeCat === MEDIA_CATEGORY.PAID ? (
         <SectionWithCta
-          title="P-OOH (유가 옥외)"
+          title="공식매체"
+          tooltip="버스 정류장·지하철역 등에 위치한 광고 지면, 또는 지점이 건물·상가 등과 공식 협의하여 확보한 지면"
           cta={{
             href: `/branches/${branch.slug}/discover?intent=paid`,
             label: "+ 등록",
@@ -170,40 +167,14 @@ export default async function BranchPage({
               records={paidRecords}
               branchSlug={branch.slug}
               historyCounts={historyCounts}
-              emptyMessage="등록된 유가 옥외 매체가 없어요. 상권에서 후보를 발견하면 ✨ 신규 발굴 으로 제안해주세요."
+              emptyMessage="등록된 공식매체가 없어요. 후보를 발견하면 + 등록 으로 추가하세요."
             />
           ) : (
             <MediaGrid
               records={paidRecords}
               branchSlug={branch.slug}
               historyCounts={historyCounts}
-              emptyMessage="등록된 유가 옥외 매체가 없어요. 상권에서 후보를 발견하면 ✨ 신규 발굴 으로 제안해주세요."
-            />
-          )}
-        </SectionWithCta>
-      ) : null}
-
-      {activeCat === "all" || activeCat === MEDIA_CATEGORY.OWNED ? (
-        <SectionWithCta
-          title="O-OOH (자체 보유)"
-          cta={{
-            href: `/branches/${branch.slug}/discover?intent=owned`,
-            label: "+ 등록",
-          }}
-        >
-          {activeView === "table" ? (
-            <MediaTable
-              records={ownedRecords}
-              branchSlug={branch.slug}
-              historyCounts={historyCounts}
-              emptyMessage="자체 보유 매체가 없어요. 우리 통제 매체(현수막·족자 등)를 등록해보세요."
-            />
-          ) : (
-            <MediaGrid
-              records={ownedRecords}
-              branchSlug={branch.slug}
-              historyCounts={historyCounts}
-              emptyMessage="자체 보유 매체가 없어요. 우리 통제 매체(현수막·족자 등)를 등록해보세요."
+              emptyMessage="등록된 공식매체가 없어요. 후보를 발견하면 + 등록 으로 추가하세요."
             />
           )}
         </SectionWithCta>
@@ -211,7 +182,8 @@ export default async function BranchPage({
 
       {activeCat === "all" || activeCat === MEDIA_CATEGORY.DISTRIBUTION ? (
         <SectionWithCta
-          title="D-OOH (배포형)"
+          title="배포형매체"
+          tooltip="전단지, 족자, 게릴라 현수막 등의 지점 주도 액션"
           cta={{
             href: `/branches/${branch.slug}/distributions/new`,
             label: "+ 등록",
@@ -227,7 +199,8 @@ export default async function BranchPage({
 
       {activeCat === "all" || activeCat === MEDIA_CATEGORY.AFFILIATED ? (
         <SectionWithCta
-          title="A-OOH (제휴)"
+          title="제휴매체"
+          tooltip="비용 대신 혜택·관계·가치 교환으로 확보한 제휴 매체"
           cta={{
             href: `/branches/${branch.slug}/discover?intent=affiliated`,
             label: "+ 등록",
@@ -273,17 +246,30 @@ function Section({
 
 function SectionWithCta({
   title,
+  tooltip,
   cta,
   children,
 }: {
   title: string;
+  tooltip?: string;
   cta: { href: string; label: string };
   children: React.ReactNode;
 }) {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-[15px] font-medium">{title}</h2>
+        <div className="flex items-center gap-1.5">
+          <h2 className="text-[15px] font-medium">{title}</h2>
+          {tooltip ? (
+            <span
+              className="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-[var(--color-border)] text-[10px] text-[var(--color-text-tertiary)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+              title={tooltip}
+              aria-label={tooltip}
+            >
+              i
+            </span>
+          ) : null}
+        </div>
         <Link
           href={cta.href}
           className="rounded-md border border-[var(--color-border)] bg-white px-3 py-1.5 text-xs font-medium text-[var(--color-accent)] hover:bg-[var(--color-bg-secondary)]"

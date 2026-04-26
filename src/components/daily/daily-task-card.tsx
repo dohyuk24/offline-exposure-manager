@@ -15,11 +15,11 @@ type Props = {
 };
 
 const TASK_TITLE: Record<DailyTaskType, string> = {
-  unofficial_update: "자체 보유 매체 사진 갱신",
+  unofficial_update: "공식매체 사진 갱신",
   posting_ending: "게시 종료 임박",
   negotiating_followup: "협의중 매체 후속 액션",
   discovery_zero: "이번 달 신규 발굴 0건",
-  barter_progress: "바터제휴 진행 체크",
+  barter_progress: "제휴매체 진행 체크",
 };
 
 const TASK_SCORE_RULE: Record<DailyTaskType, { complete: number; expire: number }> = {

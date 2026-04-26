@@ -12,7 +12,12 @@ import {
 
 type Props = { branch: Branch };
 
-const D_OOH_TYPES = [MEDIA_TYPE.LEAFLET, MEDIA_TYPE.SCROLL];
+const D_OOH_TYPES = [
+  MEDIA_TYPE.LEAFLET,
+  MEDIA_TYPE.SCROLL,
+  MEDIA_TYPE.GUERILLA_BANNER,
+  MEDIA_TYPE.ETC,
+];
 
 /**
  * D-OOH 신규 디자인 등록 + 첫 회차 동시 입력.
