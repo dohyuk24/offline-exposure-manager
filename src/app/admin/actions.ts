@@ -1,10 +1,9 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 import { createServerSupabase } from "@/lib/supabase/client";
-import { clearAdminSession, requireAdmin } from "@/lib/admin-auth";
+import { logoutAction } from "@/lib/auth/actions";
 
 function slugify(input: string): string {
   return input
@@ -15,7 +14,6 @@ function slugify(input: string): string {
 }
 
 export async function createBranchAction(formData: FormData): Promise<void> {
-  await requireAdmin();
   const name = String(formData.get("name") ?? "").trim();
   const slugRaw = String(formData.get("slug") ?? "").trim();
   const budgetRaw = String(formData.get("budget_monthly") ?? "500000");
@@ -43,12 +41,10 @@ export async function createBranchAction(formData: FormData): Promise<void> {
   if (error) throw error;
 
   revalidatePath("/admin");
-  revalidatePath("/branches");
   revalidatePath("/");
 }
 
 export async function updateBranchAction(formData: FormData): Promise<void> {
-  await requireAdmin();
   const id = String(formData.get("id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
   const budgetRaw = String(formData.get("budget_monthly") ?? "500000");
@@ -76,14 +72,12 @@ export async function updateBranchAction(formData: FormData): Promise<void> {
   if (error) throw error;
 
   revalidatePath("/admin");
-  revalidatePath("/branches");
   revalidatePath("/");
 }
 
 export async function toggleBranchActiveAction(
   formData: FormData
 ): Promise<void> {
-  await requireAdmin();
   const id = String(formData.get("id") ?? "");
   const nextActiveRaw = formData.get("is_active");
   if (!id) throw new Error("지점 id 가 필요해요");
@@ -96,10 +90,8 @@ export async function toggleBranchActiveAction(
   if (error) throw error;
 
   revalidatePath("/admin");
-  revalidatePath("/branches");
 }
 
 export async function logoutAdminAction(): Promise<void> {
-  await clearAdminSession();
-  redirect("/admin/login");
+  await logoutAction();
 }

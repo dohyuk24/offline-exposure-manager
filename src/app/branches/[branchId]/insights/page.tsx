@@ -48,17 +48,10 @@ export default async function BranchInsightsPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
-      <header>
-        <p className="text-xs uppercase tracking-wider text-[var(--color-text-tertiary)]">
-          현황
-        </p>
-        <h1 className="text-[20px] font-semibold">{branch.name}</h1>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-          {yearMonth} 기준 점수 · 활동
-        </p>
-      </header>
-
       <BranchTabs branchSlug={branch.slug} active="insights" />
+      <p className="text-sm text-[var(--color-text-secondary)]">
+        이번 달 점수와 활동 누적을 확인해요 · {yearMonth}
+      </p>
 
       <section className="space-y-3">
         <h2 className="text-[15px] font-medium">이번 달 점수</h2>

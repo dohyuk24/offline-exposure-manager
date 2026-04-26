@@ -50,17 +50,10 @@ export default async function BranchBudgetPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
-      <header>
-        <p className="text-xs uppercase tracking-wider text-[var(--color-text-tertiary)]">
-          예산
-        </p>
-        <h1 className="text-[20px] font-semibold">{branch.name}</h1>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-          {yearMonth} 기준
-        </p>
-      </header>
-
       <BranchTabs branchSlug={branch.slug} active="budget" />
+      <p className="text-sm text-[var(--color-text-secondary)]">
+        이번 달 사용 내역과 잔액을 확인해요 · {yearMonth}
+      </p>
 
       <BudgetWidget allocated={branch.budget_monthly} used={used} />
 

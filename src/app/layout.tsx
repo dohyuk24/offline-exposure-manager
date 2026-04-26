@@ -7,7 +7,7 @@ import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
 export const metadata: Metadata = {
   title: "오프라인 매체 관리",
   description:
-    "버핏서울 지점과 마케팅실이 함께 쓰는 오프라인 매체 현황 관리 서비스",
+    "버핏서울 지점과 오피스가 함께 쓰는 오프라인 매체 현황 관리 서비스",
 };
 
 export const viewport: Viewport = {

@@ -5,7 +5,7 @@
  * v1: Bot Token 기반 (chat.postMessage). webhook URL 시대는 종료.
  * 채널 전송 정책:
  *   - 지점별 알림 → branch.slack_channel
- *   - 마케팅실 공통 알림 → SLACK_MARKETING_CHANNEL_ID 환경변수
+ *   - 오피스 공통 알림 → SLACK_MARKETING_CHANNEL_ID 환경변수
  *   - SLACK_TEST_CHANNEL_OVERRIDE 가 있으면 모든 발송이 그 채널로 강제
  */
 
@@ -21,7 +21,7 @@ function marketingChannel(): string {
   return process.env.SLACK_MARKETING_CHANNEL_ID ?? "";
 }
 
-/** 신규 발굴 → 마케팅실 채널 알림 + 발견 피드 배너 갱신 트리거. */
+/** 신규 발굴 → 오피스 채널 알림 + 발견 피드 배너 갱신 트리거. */
 export async function sendDiscoveryAlert(
   branch: Branch,
   record: MediaRecord
@@ -32,7 +32,7 @@ export async function sendDiscoveryAlert(
   });
 }
 
-/** 공식매체 제안 → 마케팅실 채널. */
+/** 공식매체 제안 → 오피스 채널. */
 export async function sendOfficialProposalAlert(
   branch: Branch,
   record: MediaRecord
@@ -55,7 +55,7 @@ export async function sendReminderAlert(branch: Branch): Promise<void> {
   });
 }
 
-/** 바터제휴 성사 알림 → 마케팅실 채널. */
+/** 바터제휴 성사 알림 → 오피스 채널. */
 export async function sendBarterSuccessAlert(
   branch: Branch,
   record: MediaRecord

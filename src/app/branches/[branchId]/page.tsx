@@ -124,17 +124,10 @@ export default async function BranchPage({
 
   return (
     <div className="space-y-6">
-      <header>
-        <p className="text-xs uppercase tracking-wider text-[var(--color-text-tertiary)]">
-          관리
-        </p>
-        <h1 className="text-[20px] font-semibold">{branch.name}</h1>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-          {yearMonth} 기준 매체 관리
-        </p>
-      </header>
-
       <BranchTabs branchSlug={branch.slug} active="manage" />
+      <p className="text-sm text-[var(--color-text-secondary)]">
+        4개 카테고리 매체를 등록·업데이트해요 · {yearMonth}
+      </p>
 
       <DailyTaskCard
         branchSlug={branch.slug}

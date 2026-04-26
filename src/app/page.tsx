@@ -105,17 +105,7 @@ export default async function HomePage() {
           <DiscoveryList items={feedItems} />
         </Section>
 
-        <Section
-          title="이번 달 Top 3"
-          action={
-            <Link
-              href="/ranking"
-              className="text-xs text-[var(--color-text-tertiary)] hover:underline"
-            >
-              공개 점수판 →
-            </Link>
-          }
-        >
+        <Section title="이번 달 Top 3">
           <TopThree topThree={topThree} />
         </Section>
       </div>
@@ -130,9 +120,8 @@ export default async function HomePage() {
 function Header({ yearMonth }: { yearMonth: string }) {
   return (
     <header>
-      <h1 className="text-[20px] font-semibold">전체 현황</h1>
-      <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-        {yearMonth} 기준 · 전 지점 요약
+      <p className="text-sm text-[var(--color-text-secondary)]">
+        전 지점 매체·예산·점수 요약 · {yearMonth}
       </p>
     </header>
   );

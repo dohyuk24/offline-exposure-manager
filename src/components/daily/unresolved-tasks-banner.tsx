@@ -10,7 +10,7 @@ type Props = {
 };
 
 /**
- * 마케팅실용 미처리 task 요약 배너 (홈 상단).
+ * 오피스용 미처리 task 요약 배너 (홈 상단).
  * count 0 이면 렌더하지 않음.
  */
 export function UnresolvedTasksBanner({ totalCount, byBranch, topN = 5 }: Props) {

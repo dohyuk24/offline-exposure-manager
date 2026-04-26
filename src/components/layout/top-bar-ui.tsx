@@ -1,16 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
-import type { Branch, UserProfile } from "@/types";
+import type { Branch } from "@/types";
+import type { Session } from "@/lib/auth/temp-session";
 import { OFFICE_BRANCH_SLUG } from "@/lib/branch-order";
+import { logoutAction } from "@/lib/auth/actions";
 
 import { BranchSelector } from "./branch-selector";
 
 type Props = {
   branches: Branch[];
-  user: UserProfile | null;
+  session: Session | null;
 };
 
 type NavItem = { href: string; label: string; exact?: boolean };
@@ -18,38 +20,57 @@ type NavItem = { href: string; label: string; exact?: boolean };
 // 오피스 모드 (또는 비-지점 페이지) — 전체 nav
 const FULL_NAV: NavItem[] = [
   { href: "/", label: "전체 현황", exact: true },
-  { href: "/ranking", label: "점수판" },
   { href: "/admin", label: "어드민" },
   { href: "/guide/scoring", label: "가이드" },
 ];
 
-// 일반 지점 페이지 — 가이드만 (지점별 페이지 자체에 머물게)
-const RESTRICTED_NAV: NavItem[] = [
-  { href: "/guide/scoring", label: "가이드" },
-];
-
-export function TopBarUI({ branches, user }: Props) {
+export function TopBarUI({ branches, session }: Props) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  // 현재 보고 있는 지점 (없거나 office 면 full, 그 외면 restricted)
-  const currentSlug = pathname.match(/^\/branches\/([^/]+)/)?.[1] ?? null;
+  // 지점 세션이면 강제로 그 지점 컨텍스트 (다른 지점/오피스 접근 차단)
+  const sessionBranch =
+    session?.type === "branch" ? session.branchSlug : null;
+
+  // 컨텍스트 슬러그 — 세션 우선 → URL → ?from
+  const urlSlug = pathname.match(/^\/branches\/([^/]+)/)?.[1] ?? null;
+  const fromParam = searchParams.get("from");
+  const contextSlug = sessionBranch ?? urlSlug ?? fromParam ?? null;
   const isRestricted =
-    currentSlug !== null && currentSlug !== OFFICE_BRANCH_SLUG;
-  const navItems = isRestricted ? RESTRICTED_NAV : FULL_NAV;
+    contextSlug !== null && contextSlug !== OFFICE_BRANCH_SLUG;
+
+  const navItems: NavItem[] = isRestricted
+    ? [
+        { href: `/branches/${contextSlug}`, label: "매체 관리" },
+        {
+          href: `/guide/scoring?from=${contextSlug}`,
+          label: "가이드",
+        },
+      ]
+    : FULL_NAV;
+
+  // 로고 클릭 — 지점 세션이면 자기 지점, 오피스/no-session 면 홈
+  const logoHref = sessionBranch ? `/branches/${sessionBranch}` : "/";
+
+  // 세션 라벨 (사용자 표시)
+  const sessionLabel = !session
+    ? null
+    : session.type === "office"
+      ? "오피스"
+      : branches.find((b) => b.slug === session.branchSlug)?.name ??
+        session.branchSlug;
 
   return (
     <header className="sticky top-0 z-20 border-b border-[var(--color-border)] bg-white">
       <div className="mx-auto flex h-14 items-center gap-6 px-4 md:px-6">
-        {/* 로고 */}
         <Link
-          href="/"
+          href={logoHref}
           className="flex shrink-0 items-center gap-2 text-[15px] font-semibold text-[var(--color-text-primary)] hover:opacity-80"
         >
           <span aria-hidden>🪧</span>
           <span className="hidden sm:inline">오프라인 매체 관리</span>
         </Link>
 
-        {/* 메인 nav (가로) — 오피스/홈/관리 페이지에선 full, 일반 지점 안에선 restricted */}
         <nav className="flex flex-1 items-center gap-1 overflow-x-auto">
           {navItems.map((item) => {
             const isActive = item.exact
@@ -71,22 +92,31 @@ export function TopBarUI({ branches, user }: Props) {
           })}
         </nav>
 
-        {/* 우측: 사용자 + 지점 dropdown */}
         <div className="flex shrink-0 items-center gap-2">
-          {user ? (
-            <span className="hidden items-center gap-1 text-xs text-[var(--color-text-secondary)] md:inline-flex">
-              <span aria-hidden>🙂</span>
-              <span>{user.display_name ?? user.email ?? "사용자"}</span>
-            </span>
+          {sessionLabel ? (
+            <>
+              <span className="hidden items-center gap-1 text-xs text-[var(--color-text-secondary)] md:inline-flex">
+                <span aria-hidden>🙂</span>
+                <span>{sessionLabel}</span>
+              </span>
+              <form action={logoutAction}>
+                <button
+                  type="submit"
+                  className="rounded-md border border-[var(--color-border)] bg-white px-2.5 py-1 text-xs text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-secondary)] hover:text-[var(--color-text-secondary)]"
+                >
+                  로그아웃
+                </button>
+              </form>
+            </>
           ) : (
             <Link
               href="/login"
-              className="hidden text-xs text-[var(--color-accent)] hover:underline md:inline"
+              className="text-xs text-[var(--color-accent)] hover:underline"
             >
               로그인
             </Link>
           )}
-          <BranchSelector branches={branches} />
+          <BranchSelector branches={branches} session={session} />
         </div>
       </div>
     </header>
