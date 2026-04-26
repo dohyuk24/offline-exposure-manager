@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getBranchBySlug } from "@/lib/supabase/queries/branches";
@@ -36,31 +35,20 @@ export default async function NewDistributionPage({ params }: PageProps) {
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
-      <Header title={branch.name} slug={branch.slug} />
+      <Header title={branch.name} />
       <DistributionDiscoverForm branch={branch} />
     </div>
   );
 }
 
-function Header({ title, slug }: { title: string; slug?: string }) {
+function Header({ title }: { title: string }) {
   return (
-    <header className="space-y-2">
-      <Link
-        href={slug ? `/branches/${slug}` : "/branches"}
-        className="text-xs text-[var(--color-text-tertiary)] hover:underline"
-      >
-        ← 지점으로 돌아가기
-      </Link>
-      <div>
-        <p className="text-xs uppercase tracking-wider text-[var(--color-text-tertiary)]">
-          D-OOH 배포 기록
-        </p>
-        <h1 className="text-[20px] font-semibold">{title}</h1>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-          새 디자인을 등록하면서 첫 회차도 함께 기록해요. 같은 디자인을 재배포하면
-          나중에 회차만 추가하면 돼요.
-        </p>
-      </div>
+    <header>
+      <h1 className="text-[20px] font-semibold">{title}</h1>
+      <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+        새 디자인을 등록하면서 첫 회차도 함께 기록해요. 같은 디자인을 재배포하면
+        나중에 회차만 추가하면 돼요.
+      </p>
     </header>
   );
 }

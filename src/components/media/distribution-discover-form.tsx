@@ -91,8 +91,6 @@ export function DistributionDiscoverForm({ branch }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <SectionHeader title="디자인" />
-
       <Row label={<>디자인 사진 <span className="text-[#C4332F]">*</span></>}>
         <PhotoUploader
           value={photos}
@@ -244,13 +242,6 @@ export function DistributionDiscoverForm({ branch }: Props) {
   );
 }
 
-function SectionHeader({ title }: { title: string }) {
-  return (
-    <h3 className="border-b border-[var(--color-border)] pb-2 text-sm font-medium text-[var(--color-text-secondary)]">
-      {title}
-    </h3>
-  );
-}
 
 function Row({
   label,

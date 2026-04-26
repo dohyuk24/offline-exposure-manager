@@ -18,7 +18,6 @@ type PhotoUploaderProps = {
  * 브라우저에서 Supabase Storage 로 이미지 업로드.
  * - 📷 카메라: capture="environment" 후면 카메라
  * - 🖼 갤러리: multiple 기본 선택
- * - 📁 파일: 시스템 피커 (iOS 카메라 회귀 대응 fallback)
  */
 export function PhotoUploader({
   value,
@@ -31,7 +30,6 @@ export function PhotoUploader({
 
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
-  const systemRef = useRef<HTMLInputElement>(null);
 
   function log(line: string) {
     console.log("[photo-uploader]", line);
@@ -145,7 +143,7 @@ export function PhotoUploader({
         <div className="mb-3 text-center text-sm text-[var(--color-text-tertiary)]">
           {uploading ? "업로드 중..." : "사진 추가"}
         </div>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             disabled={busy}
@@ -168,23 +166,9 @@ export function PhotoUploader({
             </span>
             <span>갤러리</span>
           </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => systemRef.current?.click()}
-            className={buttonBase}
-          >
-            <span className="text-xl" aria-hidden>
-              📁
-            </span>
-            <span>파일</span>
-          </button>
         </div>
         <p className="mt-2 text-center text-[11px] text-[var(--color-text-tertiary)]">
           JPG · PNG · WebP · HEIC · 최대 {MAX_SIZE_MB}MB
-        </p>
-        <p className="mt-1 text-center text-[11px] text-[var(--color-text-tertiary)]">
-          카메라가 안 되면 📁 파일 → "사진 찍기"
         </p>
 
         {/* 실제 input 들 — sr-only */}
@@ -204,16 +188,6 @@ export function PhotoUploader({
           type="file"
           accept="image/*"
           multiple
-          disabled={busy}
-          onChange={handleFileChange}
-          style={srOnly}
-          aria-hidden="true"
-          tabIndex={-1}
-        />
-        <input
-          ref={systemRef}
-          type="file"
-          accept="image/*"
           disabled={busy}
           onChange={handleFileChange}
           style={srOnly}
