@@ -83,13 +83,15 @@ export function DistributionTable({
                 <td className="whitespace-nowrap px-3 py-2 text-right align-middle text-[var(--color-text-tertiary)]">
                   {d.lastDistributedOn ?? "—"}
                 </td>
-                <td className="whitespace-nowrap px-3 py-2 text-right align-middle tabular-nums text-[var(--color-text-primary)]">
+                <td className="whitespace-nowrap px-3 py-2 text-right align-middle text-[var(--color-text-primary)]">
                   {d.totalQuantity > 0 ? (
                     <>
-                      {d.totalQuantity.toLocaleString("ko-KR")}장
-                      <span className="ml-1.5 text-[11px] text-[var(--color-text-tertiary)]">
-                        · {d.eventCount}회
-                      </span>
+                      <div className="tabular-nums font-medium">
+                        {d.totalQuantity.toLocaleString("ko-KR")}장
+                      </div>
+                      <div className="text-[11px] tabular-nums text-[var(--color-text-tertiary)]">
+                        {d.eventCount}회
+                      </div>
                     </>
                   ) : (
                     "—"
