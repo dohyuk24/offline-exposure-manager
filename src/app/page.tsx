@@ -101,17 +101,7 @@ export default async function HomePage() {
       </section>
 
       <div className="grid gap-6 md:grid-cols-[1.3fr_1fr]">
-        <Section
-          title="최근 신규 발굴"
-          action={
-            <Link
-              href="/branches"
-              className="text-xs text-[var(--color-text-tertiary)] hover:underline"
-            >
-              전체 지점 →
-            </Link>
-          }
-        >
+        <Section title="최근 신규 발굴">
           <DiscoveryList items={feedItems} />
         </Section>
 

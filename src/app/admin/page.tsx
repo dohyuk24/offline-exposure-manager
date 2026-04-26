@@ -46,7 +46,7 @@ export default async function AdminPage() {
           <p className="text-xs uppercase tracking-wider text-[var(--color-text-tertiary)]">
             어드민
           </p>
-          <h1 className="text-[20px] font-semibold">지점관리</h1>
+          <h1 className="text-[20px] font-semibold">어드민</h1>
           <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
             마케팅실 전용 · {yearMonth} 기준
           </p>

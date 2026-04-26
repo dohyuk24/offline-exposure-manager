@@ -10,6 +10,7 @@
 -- ============================================================
 
 insert into branches (name, slug, budget_monthly, slack_channel) values
+  ('오피스',       'office',              0, 'C_OFFICE'),
   ('역삼ARC',      'yeoksam-arc',    500000, 'C_YEOKSAM_ARC'),
   ('도곡',         'dogok',          500000, 'C_DOGOK'),
   ('신도림',       'sindorim',       500000, 'C_SINDORIM'),

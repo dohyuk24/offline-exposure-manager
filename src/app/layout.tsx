@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { Sidebar } from "@/components/layout/sidebar";
+import { TopBar } from "@/components/layout/top-bar";
 import { DiscoveryFeedBar } from "@/components/layout/discovery-feed-bar";
 import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
 
@@ -25,17 +25,11 @@ export default function RootLayout({
   return (
     <html lang="ko" className="h-full">
       <body className="min-h-full bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] antialiased">
-        <div className="flex min-h-screen">
-          {/* 사이드바는 상단 끝까지 */}
-          <Sidebar />
-          {/* 본문 영역 — 배너는 메인 컬럼 안 (사이드바와 겹치지 않음) */}
-          <div className="flex min-w-0 flex-1 flex-col">
-            <DiscoveryFeedBar />
-            <main className="flex-1 px-4 py-4 pb-24 md:px-6 md:py-6 md:pb-6">
-              {children}
-            </main>
-          </div>
-        </div>
+        <TopBar />
+        <DiscoveryFeedBar />
+        <main className="mx-auto max-w-[1400px] px-4 py-4 pb-24 md:px-8 md:py-6 md:pb-6">
+          {children}
+        </main>
         <MobileTabBar />
       </body>
     </html>
