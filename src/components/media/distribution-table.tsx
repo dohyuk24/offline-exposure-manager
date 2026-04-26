@@ -31,8 +31,8 @@ export function DistributionTable({
           <col style={{ width: 110 }} />
           <col style={{ width: 120 }} />
           <col />
-          <col style={{ width: 110 }} />
           <col />
+          <col style={{ width: 110 }} />
         </colgroup>
         <thead className="border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-left text-[11px] uppercase tracking-wide text-[var(--color-text-tertiary)]">
           <tr>
@@ -40,8 +40,8 @@ export function DistributionTable({
             <th className="px-3 py-2 font-medium">종류</th>
             <th className="px-3 py-2 font-medium">최근 배포일</th>
             <th className="px-3 py-2 font-medium">최근 배포지</th>
-            <th className="px-3 py-2 text-right font-medium">최근 수량</th>
             <th className="px-3 py-2 font-medium">최근 전단 제목</th>
+            <th className="px-3 py-2 text-right font-medium">최근 수량</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[var(--color-border)]">
@@ -89,16 +89,16 @@ export function DistributionTable({
                 >
                   {lastLoc || "—"}
                 </td>
-                <td className="whitespace-nowrap px-3 py-2 text-right align-middle tabular-nums text-[var(--color-text-primary)]">
-                  {d.lastEventQuantity != null
-                    ? `${d.lastEventQuantity.toLocaleString("ko-KR")}장`
-                    : "—"}
-                </td>
                 <td
                   className="truncate px-3 py-2 align-middle text-[var(--color-text-secondary)]"
                   title={lastFlyer || "—"}
                 >
                   {lastFlyer || "—"}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2 text-right align-middle tabular-nums text-[var(--color-text-primary)]">
+                  {d.lastEventQuantity != null
+                    ? `${d.lastEventQuantity.toLocaleString("ko-KR")}장`
+                    : "—"}
                 </td>
               </tr>
             );
