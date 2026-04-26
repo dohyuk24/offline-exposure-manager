@@ -37,10 +37,6 @@ function periodLabel(start: string | null, end: string | null): {
 
 function costLabel(cost: number | null): string {
   if (cost == null || cost === 0) return "—";
-  if (cost >= 10000) {
-    const man = cost / 10000;
-    return `${man % 1 === 0 ? man : man.toFixed(1)}만`;
-  }
   return cost.toLocaleString("ko-KR");
 }
 
