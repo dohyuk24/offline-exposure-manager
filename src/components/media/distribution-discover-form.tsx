@@ -118,8 +118,6 @@ export function DistributionDiscoverForm({ branch }: Props) {
         </select>
       </Row>
 
-      <SectionHeader title="첫 회차 (지금 배포한 분)" />
-
       <Row label={<>배포일 <span className="text-[#C4332F]">*</span></>}>
         <input
           type="date"
