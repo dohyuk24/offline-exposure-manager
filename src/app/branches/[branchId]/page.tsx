@@ -130,7 +130,7 @@ export default async function BranchPage({
         todayIso={todayIso}
       />
 
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-3 -mb-3">
         <CategorySubTabs
           branchSlug={branch.slug}
           active={activeCat}
@@ -148,10 +148,6 @@ export default async function BranchPage({
           />
         </div>
       </div>
-
-      <p className="text-[12px] text-[var(--color-text-tertiary)]">
-        💡 기존 매체는 카드를 눌러 업데이트할 수 있어요.
-      </p>
 
       {activeCat === "all" || activeCat === MEDIA_CATEGORY.PAID ? (
         <SectionWithCta
