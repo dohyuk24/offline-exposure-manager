@@ -173,10 +173,11 @@ create table distribution_events (
   id uuid primary key default gen_random_uuid(),
   media_record_id uuid references media_records(id) on delete cascade,
   distributed_on date not null,
-  location_label text,
-  quantity int,
+  location_label text,                -- 배포지 (예: '강남대로 일대')
+  quantity int,                       -- 장 / 매 (수량)
   cost int,
-  memo text,
+  memo text,                          -- 자유 메모 (배포 방식 prefix 포함 가능)
+  flyer_title text,                   -- 전단 제목 (회차별로 어떤 내용의 전단인지)
   created_at timestamptz default now()
 );
 
