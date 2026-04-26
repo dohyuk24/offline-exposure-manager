@@ -62,8 +62,7 @@ export default async function DistributionTimelinePage({ params }: PageProps) {
     );
   }
 
-  const designSubject = record.description?.trim() ?? "";
-  const designName = designSubject || record.media_type; // 폼 라벨 등에서 사용
+  const designName = record.description?.trim() || record.media_type; // 폼 라벨 등에서 사용
   const totalQty = events.reduce((s, e) => s + (e.quantity ?? 0), 0);
   const photo = record.photos?.[0];
 
@@ -71,12 +70,7 @@ export default async function DistributionTimelinePage({ params }: PageProps) {
     <div className="mx-auto max-w-xl space-y-6">
       <header>
         <h1 className="text-[20px] font-semibold">{record.media_type}</h1>
-        {designSubject ? (
-          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-            {designSubject}
-          </p>
-        ) : null}
-        <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
+        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
           누적 {totalQty.toLocaleString("ko-KR")}장 · {events.length}회차
         </p>
       </header>
