@@ -50,15 +50,33 @@ export const MEDIA_CATEGORY_DESC: Record<MediaCategory, string> = {
 };
 
 export const MEDIA_TYPE = {
+  // P-OOH (공식매체)
+  BUS_STOP: "버스 정류장",
+  SUBWAY: "지하철역",
+  // D-OOH (배포형)
+  LEAFLET: "전단지",
+  SCROLL: "족자",
+  GUERILLA_BANNER: "게릴라 현수막",
+  // A-OOH (제휴)
+  BARTER_BANNER: "바터제휴배너",
+  // 공통/기타 — 레거시 OOH/현수막 데이터 호환용
   OOH: "OOH",
   BANNER: "현수막",
-  GUERILLA_BANNER: "게릴라 현수막",
-  SCROLL: "족자",
-  LEAFLET: "전단지",
-  BARTER_BANNER: "바터제휴배너",
   ETC: "기타",
 } as const;
 export type MediaType = (typeof MEDIA_TYPE)[keyof typeof MEDIA_TYPE];
+
+/** 카테고리별 등록 폼에서 노출할 매체 종류. */
+export const MEDIA_TYPE_BY_CATEGORY: Record<MediaCategory, readonly MediaType[]> = {
+  "P-OOH": [MEDIA_TYPE.BUS_STOP, MEDIA_TYPE.SUBWAY],
+  "D-OOH": [
+    MEDIA_TYPE.LEAFLET,
+    MEDIA_TYPE.SCROLL,
+    MEDIA_TYPE.GUERILLA_BANNER,
+    MEDIA_TYPE.ETC,
+  ],
+  "A-OOH": [MEDIA_TYPE.BARTER_BANNER, MEDIA_TYPE.ETC],
+};
 
 export const CONTENT_TYPE = {
   IMAGE: "이미지",

@@ -6,6 +6,7 @@ import {
   MEDIA_CATEGORY,
   MEDIA_STATUS,
   MEDIA_TYPE,
+  MEDIA_TYPE_BY_CATEGORY,
   type MediaCategory,
   type MediaStatus,
   type MediaType,
@@ -107,7 +108,7 @@ export function MediaForm({
         <Select
           value={values.media_type}
           onChange={(v) => update("media_type", v as MediaType)}
-          options={Object.values(MEDIA_TYPE)}
+          options={typeOptionsForEdit(values.category, values.media_type)}
         />
       </Row>
 
@@ -247,6 +248,19 @@ function Input(props: {
       className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg-primary)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
     />
   );
+}
+
+/**
+ * 카테고리별 종류 옵션. 기존 레코드가 카테고리에 속하지 않는 레거시 type
+ * (예: P-OOH 의 'OOH', '현수막') 을 들고 있으면 옵션 맨 끝에 추가해 select 깨지지 않게.
+ */
+function typeOptionsForEdit(
+  category: MediaCategory,
+  current: MediaType
+): readonly string[] {
+  const base = MEDIA_TYPE_BY_CATEGORY[category];
+  if (base.includes(current)) return base;
+  return [...base, current];
 }
 
 function Select(props: {
