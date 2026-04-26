@@ -59,14 +59,14 @@ export function MediaTable({
 
   return (
     <div className="overflow-x-auto rounded-lg border border-[var(--color-border)] bg-white">
-      <table className="w-full min-w-[640px] table-fixed text-sm">
+      <table className="w-full min-w-[760px] table-fixed text-sm">
         <colgroup>
           <col style={{ width: 64 }} />
           <col />
           <col style={{ width: 88 }} />
           <col style={{ width: 96 }} />
-          <col style={{ width: 200 }} />
-          <col style={{ width: 80 }} />
+          <col style={{ width: 220 }} />
+          <col style={{ width: 120 }} />
         </colgroup>
         <thead className="border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-left text-[11px] uppercase tracking-wide text-[var(--color-text-tertiary)]">
           <tr>
