@@ -25,27 +25,30 @@ export function DistributionTable({
 
   return (
     <div className="overflow-x-auto rounded-lg border border-[var(--color-border)] bg-white">
-      <table className="w-full min-w-[720px] table-fixed text-sm">
+      <table className="w-full min-w-[860px] table-fixed text-sm">
         <colgroup>
           <col style={{ width: 64 }} />
+          <col style={{ width: 100 }} />
+          <col />
+          <col style={{ width: 110 }} />
           <col style={{ width: 120 }} />
           <col />
-          <col style={{ width: 130 }} />
-          <col style={{ width: 140 }} />
         </colgroup>
         <thead className="border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-left text-[11px] uppercase tracking-wide text-[var(--color-text-tertiary)]">
           <tr>
             <th className="px-3 py-2 font-medium">디자인</th>
             <th className="px-3 py-2 font-medium">종류</th>
             <th className="px-3 py-2 font-medium">주제</th>
-            <th className="px-3 py-2 text-right font-medium">마지막 배포</th>
-            <th className="px-3 py-2 text-right font-medium">배포수</th>
+            <th className="px-3 py-2 text-right font-medium">최근 배포수</th>
+            <th className="px-3 py-2 text-right font-medium">최근 배포일</th>
+            <th className="px-3 py-2 font-medium">최근 배포 전단</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[var(--color-border)]">
           {designs.map((d) => {
             const photo = d.record.photos?.[0];
             const subject = d.record.description?.trim() ?? "";
+            const lastFlyer = d.lastEventMemo?.trim() ?? "";
             const href = `/branches/${branchSlug}/records/${d.record.id}/distributions`;
             return (
               <tr
@@ -77,25 +80,25 @@ export function DistributionTable({
                     {d.record.media_type}
                   </Link>
                 </td>
-                <td className="truncate px-3 py-2 align-middle text-[var(--color-text-secondary)]" title={subject || "—"}>
+                <td
+                  className="truncate px-3 py-2 align-middle text-[var(--color-text-secondary)]"
+                  title={subject || "—"}
+                >
                   {subject || "—"}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2 text-right align-middle tabular-nums text-[var(--color-text-primary)]">
+                  {d.lastEventQuantity != null
+                    ? `${d.lastEventQuantity.toLocaleString("ko-KR")}장`
+                    : "—"}
                 </td>
                 <td className="whitespace-nowrap px-3 py-2 text-right align-middle text-[var(--color-text-tertiary)]">
                   {d.lastDistributedOn ?? "—"}
                 </td>
-                <td className="whitespace-nowrap px-3 py-2 text-right align-middle text-[var(--color-text-primary)]">
-                  {d.totalQuantity > 0 ? (
-                    <>
-                      <div className="tabular-nums font-medium">
-                        {d.totalQuantity.toLocaleString("ko-KR")}장
-                      </div>
-                      <div className="text-[11px] tabular-nums text-[var(--color-text-tertiary)]">
-                        {d.eventCount}회
-                      </div>
-                    </>
-                  ) : (
-                    "—"
-                  )}
+                <td
+                  className="truncate px-3 py-2 align-middle text-[var(--color-text-secondary)]"
+                  title={lastFlyer || "—"}
+                >
+                  {lastFlyer || "—"}
                 </td>
               </tr>
             );

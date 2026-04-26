@@ -38,9 +38,11 @@ function DesignCard({
   branchSlug: string;
   design: DesignSummary;
 }) {
-  const { record, totalQuantity, eventCount, lastDistributedOn } = design;
+  const { record, lastDistributedOn, lastEventQuantity, lastEventMemo } =
+    design;
   const photo = record.photos?.[0];
   const subject = record.description?.trim() ?? "";
+  const lastFlyer = lastEventMemo?.trim() ?? "";
 
   return (
     <Link
@@ -70,12 +72,21 @@ function DesignCard({
             {subject}
           </p>
         ) : null}
-        <p className="text-[11px] text-[var(--color-text-tertiary)]">
-          {lastDistributedOn ? `마지막 ${lastDistributedOn}` : "회차 없음"}
-          {totalQuantity > 0
-            ? ` · ${totalQuantity.toLocaleString("ko-KR")}장 · ${eventCount}회`
-            : ""}
-        </p>
+        <div className="mt-1 space-y-0.5 text-[11px] text-[var(--color-text-tertiary)]">
+          <p>
+            <span className="text-[var(--color-text-secondary)]">최근 배포일</span>{" "}
+            {lastDistributedOn ?? "—"}
+            {lastEventQuantity != null
+              ? ` · ${lastEventQuantity.toLocaleString("ko-KR")}장`
+              : ""}
+          </p>
+          {lastFlyer ? (
+            <p className="line-clamp-2">
+              <span className="text-[var(--color-text-secondary)]">전단</span>{" "}
+              {lastFlyer}
+            </p>
+          ) : null}
+        </div>
       </div>
     </Link>
   );
