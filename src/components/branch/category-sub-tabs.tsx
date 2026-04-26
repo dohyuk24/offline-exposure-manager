@@ -50,19 +50,19 @@ export function CategorySubTabs({ branchSlug, active, counts }: Props) {
               <Link
                 href={href}
                 title={tabTitle(tab.value)}
-                className={`inline-flex items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2 text-sm transition-colors ${
+                className={`-mb-px inline-flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-2.5 text-[15px] transition-colors ${
                   isActive
-                    ? "border-[var(--color-accent)] font-medium text-[var(--color-text-primary)]"
-                    : "border-transparent text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
+                    ? "border-[var(--color-accent)] font-semibold text-[var(--color-text-primary)]"
+                    : "border-transparent font-medium text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
                 }`}
               >
                 <span>{tabLabel(tab.value)}</span>
                 {count !== undefined ? (
                   <span
-                    className={`rounded-full px-1.5 text-[10px] ${
+                    className={`inline-flex min-w-[22px] items-center justify-center rounded-full px-1.5 py-0.5 text-[12px] font-semibold tabular-nums ${
                       isActive
-                        ? "bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)]"
-                        : "text-[var(--color-text-tertiary)]"
+                        ? "bg-[var(--color-accent-soft)] text-[var(--color-accent)]"
+                        : "bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)]"
                     }`}
                   >
                     {count}
