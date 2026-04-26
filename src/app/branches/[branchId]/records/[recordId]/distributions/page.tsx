@@ -126,6 +126,7 @@ export default async function DistributionTimelinePage({ params }: PageProps) {
                 branchSlug={branch.slug}
                 recordId={record.id}
                 designName={designName}
+                photo={photo}
               />
             ))}
           </ul>

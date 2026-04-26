@@ -74,7 +74,7 @@ export type DailyTaskWithRecord = DailyTask & {
 };
 
 /**
- * 홈 마케팅실용 배너: 지점별 open task 카운트.
+ * 홈 오피스용 배너: 지점별 open task 카운트.
  * count 0 인 지점은 결과에서 제외.
  */
 export type BranchUnresolvedSummary = {

@@ -4,7 +4,10 @@ import type { MediaRecord, MediaType } from "@/types";
 import { CategoryBadge, StatusBadge } from "@/components/ui/status-badge";
 
 const FALLBACK_THUMB: Record<MediaType, { icon: string; bg: string }> = {
+  "버스 정류장": { icon: "🚏", bg: "#EBF3FB" },
+  지하철역: { icon: "🚇", bg: "#EBF3FB" },
   현수막: { icon: "🪧", bg: "#F0F0EF" },
+  "게릴라 현수막": { icon: "⚡", bg: "#FFF3E0" },
   족자: { icon: "📜", bg: "#F0F0EF" },
   전단지: { icon: "📄", bg: "#F0F0EF" },
   OOH: { icon: "🏙️", bg: "#EBF3FB" },

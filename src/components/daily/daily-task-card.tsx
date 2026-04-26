@@ -15,11 +15,11 @@ type Props = {
 };
 
 const TASK_TITLE: Record<DailyTaskType, string> = {
-  unofficial_update: "자체 보유 매체 사진 갱신",
+  unofficial_update: "공식매체 사진 갱신",
   posting_ending: "게시 종료 임박",
   negotiating_followup: "협의중 매체 후속 액션",
   discovery_zero: "이번 달 신규 발굴 0건",
-  barter_progress: "바터제휴 진행 체크",
+  barter_progress: "제휴매체 진행 체크",
 };
 
 const TASK_SCORE_RULE: Record<DailyTaskType, { complete: number; expire: number }> = {
@@ -41,10 +41,19 @@ export function DailyTaskCard({ branchSlug, tasks: initial, todayIso }: Props) {
 
   const doneCount = tasks.filter((t) => t.status === "done").length;
   const total = tasks.length;
+  const openCount = total - doneCount;
+  const percent = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+  const allDone = total > 0 && openCount === 0;
+
+  // 좌측 컬러 보더 — 미처리 있으면 amber/violet, 다 완료면 green
+  const borderColor = allDone
+    ? "#10b981"
+    : openCount > 0
+      ? "#5b5fd6"
+      : "#9ca3af";
 
   function handleCheck(taskId: string) {
     setPendingId(taskId);
-    // optimistic — 즉시 done 으로
     setTasks((prev) =>
       prev.map((t) =>
         t.id === taskId
@@ -60,7 +69,6 @@ export function DailyTaskCard({ branchSlug, tasks: initial, todayIso }: Props) {
     startTransition(async () => {
       const result = await manualCompleteTaskAction(taskId, branchSlug);
       if (!result.ok) {
-        // 실패 시 revert
         setTasks((prev) =>
           prev.map((t) =>
             t.id === taskId
@@ -77,14 +85,18 @@ export function DailyTaskCard({ branchSlug, tasks: initial, todayIso }: Props) {
   if (total === 0) {
     return (
       <section className="space-y-3">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-[15px] font-medium">오늘의 할 일</h2>
-          <span className="text-xs text-[var(--color-text-tertiary)]">
-            {dateLabel}
-          </span>
-        </div>
-        <div className="rounded-lg border border-[var(--color-border)] bg-white px-4 py-6 text-center text-sm text-[var(--color-text-tertiary)]">
-          오늘은 할 일이 없어요 ☀️
+        <h2 className="text-[15px] font-medium">오늘의 할 일</h2>
+        <div
+          className="rounded-xl border border-[var(--color-border)] bg-white p-6 text-center"
+          style={{ borderLeft: "4px solid #10b981" }}
+        >
+          <p className="text-2xl">☀️</p>
+          <p className="mt-2 text-[15px] font-semibold text-[var(--color-text-primary)]">
+            오늘은 할 일이 없어요
+          </p>
+          <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
+            여유 있는 날이에요. 상권 한 번 둘러볼까요?
+          </p>
         </div>
       </section>
     );
@@ -92,18 +104,44 @@ export function DailyTaskCard({ branchSlug, tasks: initial, todayIso }: Props) {
 
   return (
     <section className="space-y-3">
-      <div className="flex items-baseline justify-between">
+      <div className="flex items-center justify-between">
         <h2 className="text-[15px] font-medium">오늘의 할 일</h2>
         <span className="text-xs text-[var(--color-text-tertiary)]">
-          {dateLabel} · 진척 {doneCount}/{total}
+          {dateLabel}
         </span>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-[var(--color-border)] bg-white">
-        <div className="h-1 w-full bg-[var(--color-bg-secondary)]">
+      <div
+        className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-white"
+        style={{ borderLeft: `4px solid ${borderColor}` }}
+      >
+        {/* KPI strip — 미처리 / 완료 / 진척 */}
+        <div className="grid grid-cols-3 divide-x divide-[var(--color-border)] border-b border-[var(--color-border)]">
+          <KpiCell
+            label="미처리"
+            value={openCount}
+            tone={openCount > 0 ? "warn" : "muted"}
+          />
+          <KpiCell
+            label="완료"
+            value={doneCount}
+            tone={doneCount > 0 ? "ok" : "muted"}
+          />
+          <KpiCell
+            label="진척"
+            value={`${percent}%`}
+            tone={allDone ? "ok" : "accent"}
+          />
+        </div>
+
+        {/* 진척 bar — 굵게 */}
+        <div className="h-2 w-full bg-[var(--color-bg-secondary)]">
           <div
-            className="h-full bg-[var(--color-accent)] transition-all"
-            style={{ width: `${total > 0 ? (doneCount / total) * 100 : 0}%` }}
+            className="h-full transition-all"
+            style={{
+              width: `${percent}%`,
+              backgroundColor: allDone ? "#10b981" : "#5b5fd6",
+            }}
           />
         </div>
 
@@ -115,17 +153,26 @@ export function DailyTaskCard({ branchSlug, tasks: initial, todayIso }: Props) {
             const wasAuto = isDone && task.completed_by === "auto";
             const tooltipOpen = openTooltip === task.id;
             const rule = TASK_SCORE_RULE[task.task_type];
+            const carryDays = task.carry_over_count + 1;
+            const isOverdue = !isDone && task.carry_over_count >= 1;
 
             return (
-              <li key={task.id} className="flex items-start gap-3 px-4 py-3">
+              <li
+                key={task.id}
+                className={`flex items-start gap-3 px-4 py-3 ${
+                  isOverdue ? "bg-[#fff8f0]" : ""
+                }`}
+              >
                 <button
                   type="button"
                   disabled={!canManual || pendingId === task.id}
                   onClick={() => canManual && handleCheck(task.id)}
-                  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border text-xs transition-colors ${
+                  className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 text-sm transition-colors ${
                     isDone
-                      ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-white"
-                      : "border-[var(--color-border)] bg-white"
+                      ? "border-[#10b981] bg-[#10b981] text-white"
+                      : isOverdue
+                        ? "border-[#d97706] bg-white"
+                        : "border-[var(--color-border)] bg-white"
                   } ${
                     canManual
                       ? "cursor-pointer hover:border-[var(--color-accent)]"
@@ -146,9 +193,9 @@ export function DailyTaskCard({ branchSlug, tasks: initial, todayIso }: Props) {
                 </button>
 
                 <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     <span
-                      className={`text-sm ${
+                      className={`text-[14px] font-medium ${
                         isDone
                           ? "text-[var(--color-text-tertiary)] line-through"
                           : "text-[var(--color-text-primary)]"
@@ -157,22 +204,22 @@ export function DailyTaskCard({ branchSlug, tasks: initial, todayIso }: Props) {
                       {TASK_TITLE[task.task_type]}
                     </span>
 
-                    {!isDone && task.carry_over_count >= 1 ? (
-                      <span className="rounded-full bg-[#FFE2DD] px-2 py-0.5 text-[10px] font-medium text-[#C4332F]">
-                        ⚠ {task.carry_over_count + 1}일째 미처리
+                    {isOverdue ? (
+                      <span className="rounded-md bg-[#d97706] px-2 py-0.5 text-[11px] font-semibold text-white">
+                        ⚠ {carryDays}일째
                       </span>
                     ) : null}
 
                     {wasAuto ? (
-                      <span className="rounded-full bg-[var(--color-bg-secondary)] px-2 py-0.5 text-[10px] text-[var(--color-text-tertiary)]">
-                        자동 완료
+                      <span className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-1.5 py-0.5 text-[10px] text-[var(--color-text-tertiary)]">
+                        자동
                       </span>
                     ) : null}
                   </div>
 
                   {renderDetail(task) ? (
                     <p
-                      className={`mt-0.5 text-xs ${
+                      className={`mt-1 text-[12px] ${
                         isDone
                           ? "text-[var(--color-text-tertiary)] line-through"
                           : "text-[var(--color-text-secondary)]"
@@ -189,7 +236,7 @@ export function DailyTaskCard({ branchSlug, tasks: initial, todayIso }: Props) {
                     onClick={() =>
                       setOpenTooltip(tooltipOpen ? null : task.id)
                     }
-                    className="flex h-5 w-5 items-center justify-center rounded-full border border-[var(--color-border)] text-[10px] text-[var(--color-text-tertiary)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                    className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--color-border)] text-[11px] text-[var(--color-text-tertiary)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
                     aria-label="점수 룰 보기"
                   >
                     i
@@ -203,13 +250,13 @@ export function DailyTaskCard({ branchSlug, tasks: initial, todayIso }: Props) {
                       <div className="space-y-1 text-[var(--color-text-secondary)]">
                         <div className="flex justify-between">
                           <span>완료 시</span>
-                          <span className="font-medium text-[#1F8B4C]">
+                          <span className="font-medium text-[#10b981]">
                             +{rule.complete}점
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span>7일 미처리</span>
-                          <span className="font-medium text-[#C4332F]">
+                          <span className="font-medium text-[#dc2626]">
                             {rule.expire}점
                           </span>
                         </div>
@@ -242,6 +289,35 @@ export function DailyTaskCard({ branchSlug, tasks: initial, todayIso }: Props) {
         </div>
       </div>
     </section>
+  );
+}
+
+function KpiCell({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string | number;
+  tone: "ok" | "warn" | "accent" | "muted";
+}) {
+  const valueColor =
+    tone === "ok"
+      ? "text-[#10b981]"
+      : tone === "warn"
+        ? "text-[#d97706]"
+        : tone === "accent"
+          ? "text-[var(--color-accent)]"
+          : "text-[var(--color-text-tertiary)]";
+  return (
+    <div className="flex flex-col items-center justify-center px-3 py-3">
+      <p className={`text-[22px] font-bold leading-none tabular-nums ${valueColor}`}>
+        {value}
+      </p>
+      <p className="mt-1 text-[11px] font-medium text-[var(--color-text-tertiary)]">
+        {label}
+      </p>
+    </div>
   );
 }
 

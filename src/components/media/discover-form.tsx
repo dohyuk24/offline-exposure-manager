@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import {
   MEDIA_CATEGORY,
   MEDIA_STATUS,
-  MEDIA_TYPE,
+  MEDIA_TYPE_BY_CATEGORY,
   type MediaType,
 } from "@/types";
 import type { Branch } from "@/types";
@@ -16,7 +16,7 @@ import {
   type RegisterMediaPayload,
 } from "@/app/branches/[branchId]/new/actions";
 
-export type DiscoverIntent = "paid" | "owned" | "affiliated";
+export type DiscoverIntent = "paid" | "affiliated";
 
 type Props = {
   branch: Branch;
@@ -26,28 +26,26 @@ type Props = {
 /**
  * 신규 매체 등록 컴팩트 폼.
  *
- * intent="paid" (기본): P-OOH 후보 발굴 — status=아이디어 + is_new_discovery=true
- * intent="owned": O-OOH 자체 보유 매체 등록 — status=게시중 + is_new_discovery=false
- * intent="affiliated": A-OOH 제휴 매체 등록 — status=협의중 + 제휴 조건 항상 노출
+ * intent="paid" (기본): 공식매체 — status=아이디어 + is_new_discovery=true
+ * intent="affiliated": 제휴매체 — status=협의중 + 제휴 조건 항상 노출
  */
 export function DiscoverForm({ branch, intent = "paid" }: Props) {
-  const isOwned = intent === "owned";
   const isAffiliated = intent === "affiliated";
   const targetCategory = isAffiliated
     ? MEDIA_CATEGORY.AFFILIATED
-    : isOwned
-      ? MEDIA_CATEGORY.OWNED
-      : MEDIA_CATEGORY.PAID;
+    : MEDIA_CATEGORY.PAID;
   const targetStatus = isAffiliated
     ? MEDIA_STATUS.NEGOTIATING
-    : isOwned
-      ? MEDIA_STATUS.POSTING
-      : MEDIA_STATUS.IDEA;
+    : MEDIA_STATUS.IDEA;
+  const typeOptions = MEDIA_TYPE_BY_CATEGORY[targetCategory];
   const [photos, setPhotos] = useState<string[]>([]);
-  const [mediaType, setMediaType] = useState<MediaType>(MEDIA_TYPE.BANNER);
-  const [description, setDescription] = useState("");
+  const [mediaType, setMediaType] = useState<MediaType>(typeOptions[0]);
+  const [locationLabel, setLocationLabel] = useState("");
+  const [detail, setDetail] = useState("");
+  const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [cost, setCost] = useState("");
+  const [size, setSize] = useState("");
   const [barterCondition, setBarterCondition] = useState("");
 
   const [isPending, startTransition] = useTransition();
@@ -63,19 +61,24 @@ export function DiscoverForm({ branch, intent = "paid" }: Props) {
     }
     setErrorMessage(null);
 
+    // 위치 + 설명을 description 한 컬럼에 저장 (DB 스키마 변경 없이 통합)
+    const description = [locationLabel.trim(), detail.trim()]
+      .filter(Boolean)
+      .join(" — ");
+
     const payload: RegisterMediaPayload = {
       branchSlug: branch.slug,
       category: targetCategory,
       media_type: mediaType,
       status: targetStatus,
       description,
-      size: "",
+      size,
       content_type: "",
-      start_date: "",
+      start_date: startDate,
       end_date: endDate,
       cost,
       barter_condition: barterCondition,
-      is_new_discovery: !isOwned && !isAffiliated,
+      is_new_discovery: !isAffiliated,
       photos,
     };
 
@@ -89,7 +92,7 @@ export function DiscoverForm({ branch, intent = "paid" }: Props) {
     });
   }
 
-  const isBarter = mediaType === MEDIA_TYPE.BARTER_BANNER;
+  const isBarter = mediaType === "바터제휴배너";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
@@ -108,7 +111,7 @@ export function DiscoverForm({ branch, intent = "paid" }: Props) {
       <Row
         label={
           <>
-            매체 종류 <span className="text-[#C4332F]">*</span>
+            종류 <span className="text-[#C4332F]">*</span>
           </>
         }
       >
@@ -118,7 +121,7 @@ export function DiscoverForm({ branch, intent = "paid" }: Props) {
           disabled={isPending}
           className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
         >
-          {Object.values(MEDIA_TYPE).map((t) => (
+          {typeOptions.map((t) => (
             <option key={t} value={t}>
               {t}
             </option>
@@ -126,11 +129,11 @@ export function DiscoverForm({ branch, intent = "paid" }: Props) {
         </select>
       </Row>
 
-      <Row label="위치 라벨">
+      <Row label="위치">
         <input
           type="text"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          value={locationLabel}
+          onChange={(e) => setLocationLabel(e.target.value)}
           placeholder="예: 강남대로 sk자이 앞"
           disabled={isPending}
           className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
@@ -140,49 +143,82 @@ export function DiscoverForm({ branch, intent = "paid" }: Props) {
         </p>
       </Row>
 
-      <details className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-3">
-        <summary className="cursor-pointer text-sm text-[var(--color-text-secondary)]">
-          더 자세히 (선택)
-        </summary>
-        <div className="mt-3 space-y-4">
-          <Row label="종료일 (예상)">
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              disabled={isPending}
-              className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
-            />
-          </Row>
-          <Row label="비용 (원)">
-            <input
-              type="number"
-              inputMode="numeric"
-              value={cost}
-              onChange={(e) => setCost(e.target.value)}
-              placeholder="0"
-              disabled={isPending}
-              className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
-            />
-          </Row>
-          {isBarter || isAffiliated ? (
-            <Row label={isAffiliated ? "제휴 조건" : "바터 조건"}>
-              <input
-                type="text"
-                value={barterCondition}
-                onChange={(e) => setBarterCondition(e.target.value)}
-                placeholder={
-                  isAffiliated
-                    ? "예: 상호 노출 / 무료 PT 1회 제공"
-                    : "상호 제공 조건"
-                }
-                disabled={isPending}
-                className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
-              />
-            </Row>
-          ) : null}
-        </div>
-      </details>
+      <Row label="설명">
+        <textarea
+          value={detail}
+          onChange={(e) => setDetail(e.target.value)}
+          placeholder={
+            isAffiliated
+              ? "어떤 매체인지, 협의 배경 등 자유 메모"
+              : "지면 특징, 주변 환경, 제약 등 자유 메모"
+          }
+          rows={3}
+          disabled={isPending}
+          className="w-full resize-y rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
+        />
+      </Row>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Row label="계약 시작일">
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            disabled={isPending}
+            className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
+          />
+        </Row>
+        <Row label="계약 종료일">
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            disabled={isPending}
+            className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
+          />
+        </Row>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Row label="사이즈">
+          <input
+            type="text"
+            value={size}
+            onChange={(e) => setSize(e.target.value)}
+            placeholder="예: 2m × 1m"
+            disabled={isPending}
+            className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
+          />
+        </Row>
+        <Row label="비용 (원)">
+          <input
+            type="number"
+            inputMode="numeric"
+            value={cost}
+            onChange={(e) => setCost(e.target.value)}
+            placeholder="0"
+            disabled={isPending}
+            className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
+          />
+        </Row>
+      </div>
+
+      {isBarter || isAffiliated ? (
+        <Row label={isAffiliated ? "주고받은 혜택" : "바터 조건"}>
+          <input
+            type="text"
+            value={barterCondition}
+            onChange={(e) => setBarterCondition(e.target.value)}
+            placeholder={
+              isAffiliated
+                ? "예: 상호 노출 / 무료 PT 1회 제공"
+                : "상호 제공 조건"
+            }
+            disabled={isPending}
+            className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
+          />
+        </Row>
+      ) : null}
 
       {errorMessage ? (
         <p className="rounded-md border border-[#C4332F]/40 bg-[#FFE2DD]/40 px-3 py-2 text-xs text-[#C4332F]">
@@ -198,18 +234,14 @@ export function DiscoverForm({ branch, intent = "paid" }: Props) {
         {isPending
           ? "등록 중..."
           : isAffiliated
-            ? "🤝 제휴 등록"
-            : isOwned
-              ? "📌 자체 보유 등록"
-              : "✨ 발굴 등록"}
+            ? "🤝 제휴매체 등록"
+            : "✨ 공식매체 등록"}
       </button>
 
       <p className="text-center text-[11px] text-[var(--color-text-tertiary)]">
         {isAffiliated
-          ? "A-OOH (제휴) · 상태=협의중 으로 자동 등록돼요. 카드에서 게시중·완료로 진행 변경하세요."
-          : isOwned
-            ? "O-OOH (자체 보유) · 상태=게시중 으로 자동 등록돼요. 나중에 매체 카드에서 변경 가능."
-            : "P-OOH (유가 옥외) · 상태=아이디어 로 자동 등록돼요. 나중에 매체 카드에서 카테고리·상태를 바꿀 수 있어요."}
+          ? "제휴매체 · 상태=협의중 으로 자동 등록돼요. 카드에서 게시중·완료로 진행 변경하세요."
+          : "공식매체 · 상태=아이디어 로 자동 등록돼요. 나중에 매체 카드에서 카테고리·상태를 바꿀 수 있어요."}
       </p>
     </form>
   );

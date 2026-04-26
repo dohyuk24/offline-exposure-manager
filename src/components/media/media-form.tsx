@@ -6,6 +6,7 @@ import {
   MEDIA_CATEGORY,
   MEDIA_STATUS,
   MEDIA_TYPE,
+  MEDIA_TYPE_BY_CATEGORY,
   type MediaCategory,
   type MediaStatus,
   type MediaType,
@@ -50,8 +51,6 @@ type MediaFormProps = {
   errorMessage?: string | null;
   initialValues?: Partial<MediaFormValues>;
   submitLabel?: string;
-  /** 기존 히스토리 이어서 기록 모드 — 신규 발굴 체크박스 숨김 */
-  hideDiscoveryToggle?: boolean;
   /** 사진 업로드 시 Storage path prefix 로 사용 (지점 slug) */
   branchSlug: string;
 };
@@ -65,7 +64,6 @@ export function MediaForm({
   errorMessage,
   initialValues,
   submitLabel = "등록하기",
-  hideDiscoveryToggle = false,
   branchSlug,
 }: MediaFormProps) {
   const [values, setValues] = useState<MediaFormValues>({
@@ -107,7 +105,7 @@ export function MediaForm({
         <Select
           value={values.media_type}
           onChange={(v) => update("media_type", v as MediaType)}
-          options={Object.values(MEDIA_TYPE)}
+          options={typeOptionsForEdit(values.category, values.media_type)}
         />
       </Row>
 
@@ -179,23 +177,6 @@ export function MediaForm({
         </Row>
       ) : null}
 
-      {hideDiscoveryToggle ? null : (
-        <label className="flex items-center gap-2 rounded-md border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-3 text-sm">
-          <input
-            type="checkbox"
-            checked={values.is_new_discovery}
-            onChange={(e) => update("is_new_discovery", e.target.checked)}
-            className="h-4 w-4"
-          />
-          <span>
-            <span className="font-medium">✨ 신규 발굴</span>
-            <span className="ml-2 text-[var(--color-text-tertiary)]">
-              새 위치·채널에서 처음 확보한 매체
-            </span>
-          </span>
-        </label>
-      )}
-
       {errorMessage ? (
         <p className="rounded-md border border-[#C4332F]/40 bg-[#FFE2DD]/40 px-3 py-2 text-sm text-[#C4332F]">
           {errorMessage}
@@ -247,6 +228,19 @@ function Input(props: {
       className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg-primary)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
     />
   );
+}
+
+/**
+ * 카테고리별 종류 옵션. 기존 레코드가 카테고리에 속하지 않는 레거시 type
+ * (예: P-OOH 의 'OOH', '현수막') 을 들고 있으면 옵션 맨 끝에 추가해 select 깨지지 않게.
+ */
+function typeOptionsForEdit(
+  category: MediaCategory,
+  current: MediaType
+): readonly string[] {
+  const base = MEDIA_TYPE_BY_CATEGORY[category];
+  if (base.includes(current)) return base;
+  return [...base, current];
 }
 
 function Select(props: {

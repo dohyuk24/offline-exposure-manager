@@ -12,7 +12,15 @@ import {
 
 type Props = { branch: Branch };
 
-const D_OOH_TYPES = [MEDIA_TYPE.LEAFLET, MEDIA_TYPE.SCROLL];
+const D_OOH_TYPES = [
+  MEDIA_TYPE.LEAFLET,
+  MEDIA_TYPE.SCROLL,
+  MEDIA_TYPE.GUERILLA_BANNER,
+  MEDIA_TYPE.ETC,
+];
+
+const SIZE_OPTIONS = ["A5", "A4"] as const;
+const DISTRIBUTION_METHODS = ["직투", "스탠딩"] as const;
 
 /**
  * D-OOH 신규 디자인 등록 + 첫 회차 동시 입력.
@@ -22,6 +30,9 @@ export function DistributionDiscoverForm({ branch }: Props) {
   const [photos, setPhotos] = useState<string[]>([]);
   const [designName, setDesignName] = useState("");
   const [mediaType, setMediaType] = useState<string>(MEDIA_TYPE.LEAFLET);
+  const [size, setSize] = useState<string>(SIZE_OPTIONS[0]);
+  const [distributionMethod, setDistributionMethod] =
+    useState<string>(DISTRIBUTION_METHODS[0]);
 
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
@@ -42,7 +53,7 @@ export function DistributionDiscoverForm({ branch }: Props) {
       return;
     }
     if (!designName.trim()) {
-      setErrorMessage("디자인 이름이 필요해요 (예: 봄 PT 프로모션)");
+      setErrorMessage("전단지 주제를 입력해주세요 (예: 봄 PT 프로모션)");
       return;
     }
     if (!distributedOn) {
@@ -56,8 +67,10 @@ export function DistributionDiscoverForm({ branch }: Props) {
       branchSlug: branch.slug,
       designName: designName.trim(),
       mediaType,
+      size,
       photo: photos[0],
       distributedOn,
+      distributionMethod,
       locationLabel,
       quantity,
       cost,
@@ -87,43 +100,73 @@ export function DistributionDiscoverForm({ branch }: Props) {
         />
       </Row>
 
-      <Row label={<>디자인 이름 <span className="text-[#C4332F]">*</span></>}>
+      <Row label={<>전단지 주제 <span className="text-[#C4332F]">*</span></>}>
         <input
           type="text"
           value={designName}
           onChange={(e) => setDesignName(e.target.value)}
-          placeholder="예: 봄 PT 프로모션 전단지"
+          placeholder="예: 봄 PT 프로모션"
           disabled={isPending}
           className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
         />
       </Row>
 
-      <Row label="종류">
-        <select
-          value={mediaType}
-          onChange={(e) => setMediaType(e.target.value)}
-          disabled={isPending}
-          className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
-        >
-          {D_OOH_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
-      </Row>
+      <div className="grid grid-cols-2 gap-3">
+        <Row label="종류">
+          <select
+            value={mediaType}
+            onChange={(e) => setMediaType(e.target.value)}
+            disabled={isPending}
+            className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
+          >
+            {D_OOH_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+        </Row>
+        <Row label="사이즈">
+          <select
+            value={size}
+            onChange={(e) => setSize(e.target.value)}
+            disabled={isPending}
+            className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
+          >
+            {SIZE_OPTIONS.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </Row>
+      </div>
 
-      <SectionHeader title="첫 회차 (지금 배포한 분)" />
-
-      <Row label={<>배포일 <span className="text-[#C4332F]">*</span></>}>
-        <input
-          type="date"
-          value={distributedOn}
-          onChange={(e) => setDistributedOn(e.target.value)}
-          disabled={isPending}
-          className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
-        />
-      </Row>
+      <div className="grid grid-cols-2 gap-3">
+        <Row label={<>배포일 <span className="text-[#C4332F]">*</span></>}>
+          <input
+            type="date"
+            value={distributedOn}
+            onChange={(e) => setDistributedOn(e.target.value)}
+            disabled={isPending}
+            className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
+          />
+        </Row>
+        <Row label="배포 방식">
+          <select
+            value={distributionMethod}
+            onChange={(e) => setDistributionMethod(e.target.value)}
+            disabled={isPending}
+            className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
+          >
+            {DISTRIBUTION_METHODS.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </select>
+        </Row>
+      </div>
 
       <Row label="배포지">
         <input
@@ -182,7 +225,7 @@ export function DistributionDiscoverForm({ branch }: Props) {
         disabled={isPending}
         className="w-full rounded-lg bg-[var(--color-accent)] px-4 py-3 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
       >
-        {isPending ? "등록 중..." : "디자인 + 첫 회차 등록"}
+        {isPending ? "등록 중..." : "등록"}
       </button>
     </form>
   );

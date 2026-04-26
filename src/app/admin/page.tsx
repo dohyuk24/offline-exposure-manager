@@ -5,7 +5,6 @@ import { createServerSupabase } from "@/lib/supabase/client";
 import { listBranchSummaries } from "@/lib/supabase/queries/branches";
 import { currentYearMonth } from "@/lib/date";
 import { sortBranchesByDisplayOrder } from "@/lib/branch-order";
-import { requireAdmin } from "@/lib/admin-auth";
 import { formatError } from "@/lib/format-error";
 import { ConnectionError } from "@/components/ui/connection-error";
 
@@ -17,8 +16,7 @@ import {
 } from "./actions";
 
 export default async function AdminPage() {
-  await requireAdmin();
-
+  // 인증은 글로벌 미들웨어 (src/middleware.ts) 가 처리.
   const yearMonth = currentYearMonth();
 
   let allBranches: Branch[] = [];
@@ -41,16 +39,10 @@ export default async function AdminPage() {
 
   return (
     <div className="space-y-8">
-      <header className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase tracking-wider text-[var(--color-text-tertiary)]">
-            어드민
-          </p>
-          <h1 className="text-[20px] font-semibold">어드민</h1>
-          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-            마케팅실 전용 · {yearMonth} 기준
-          </p>
-        </div>
+      <header className="flex items-center justify-between gap-4">
+        <p className="text-sm text-[var(--color-text-secondary)]">
+          지점 추가·수정 · 예산 · 슬랙 채널 설정 · {yearMonth}
+        </p>
         <form action={logoutAdminAction}>
           <button
             type="submit"

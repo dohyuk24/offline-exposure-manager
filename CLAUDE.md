@@ -120,7 +120,7 @@ create table branches (
 create table media_records (
   id uuid primary key default gen_random_uuid(),
   branch_id uuid references branches(id),
-  category text not null,           -- P-OOH / A-OOH / D-OOH / O-OOH (4분류)
+  category text not null,           -- P-OOH(공식) / D-OOH(배포형) / A-OOH(제휴) — 3분류
   media_type text not null,         -- OOH / 현수막 / 족자 / 전단지 / 바터제휴배너 / 기타
   status text not null,             -- 게시중 / 게시종료 / 협의중 / 협의실패 / 아이디어 / 미진행 / 협의완료
   description text,
@@ -237,12 +237,11 @@ export const MEDIA_STATUS = {
 } as const;
 
 export const MEDIA_CATEGORY = {
-  PAID:         'P-OOH',  // 유가 옥외 (구 '공식')
-  AFFILIATED:   'A-OOH',  // 제휴 (v2 활성)
-  DISTRIBUTION: 'D-OOH',  // 배포형 (전단지·족자)
-  OWNED:        'O-OOH',  // 자체 보유 (구 '자체보유')
+  PAID:         'P-OOH',  // 공식매체 (구 '공식' + '자체보유' 통합)
+  DISTRIBUTION: 'D-OOH',  // 배포형매체 (전단지·족자·게릴라 현수막)
+  AFFILIATED:   'A-OOH',  // 제휴매체 (혜택·관계 교환)
 } as const;
-// 자세한 정의: docs/media-category-restructure-plan.md
+// 카테고리 라벨/설명은 src/types/index.ts 의 MEDIA_CATEGORY_LABEL / MEDIA_CATEGORY_DESC 참고
 
 export const SCORE_CONFIG = {
   // v0 호환

@@ -14,6 +14,8 @@ type Props = {
   branchSlug: string;
   recordId: string;
   designName: string;
+  /** 디자인 사진 (전 회차 공통). 없으면 fallback 썸네일. */
+  photo?: string;
 };
 
 export function DistributionEventRow({
@@ -21,6 +23,7 @@ export function DistributionEventRow({
   branchSlug,
   recordId,
   designName,
+  photo,
 }: Props) {
   const [editing, setEditing] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -187,17 +190,31 @@ export function DistributionEventRow({
 
   return (
     <li className="flex items-start gap-3 px-4 py-3">
-      <div className="shrink-0 text-[12px] font-medium text-[var(--color-text-secondary)]">
-        {event.distributed_on}
-      </div>
+      {photo ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={photo}
+          alt=""
+          className="h-14 w-14 shrink-0 rounded-md object-cover"
+        />
+      ) : (
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-[var(--color-bg-secondary)] text-[10px] text-[var(--color-text-tertiary)]">
+          📄
+        </div>
+      )}
       <div className="min-w-0 flex-1">
-        <p className="text-sm text-[var(--color-text-primary)]">
-          {event.location_label || "(배포지 미기재)"}
+        <div className="flex items-baseline gap-2">
+          <span className="text-[12px] font-medium tabular-nums text-[var(--color-text-secondary)]">
+            {event.distributed_on}
+          </span>
           {event.quantity ? (
-            <span className="ml-2 text-[var(--color-text-secondary)]">
+            <span className="text-[12px] text-[var(--color-text-tertiary)]">
               · {event.quantity.toLocaleString("ko-KR")}장
             </span>
           ) : null}
+        </div>
+        <p className="mt-0.5 text-sm text-[var(--color-text-primary)]">
+          {event.location_label || "(배포지 미기재)"}
         </p>
         {event.cost ? (
           <p className="mt-0.5 text-[11px] text-[var(--color-text-tertiary)]">

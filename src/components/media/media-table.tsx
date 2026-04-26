@@ -12,31 +12,36 @@ type Props = {
 
 const TODAY = new Date();
 
-function dDayLabel(endDate: string | null): {
+function periodLabel(start: string | null, end: string | null): {
   label: string;
   tone: "default" | "warn" | "danger";
-} | null {
-  if (!endDate) return null;
-  const end = new Date(endDate);
-  const days = Math.floor(
-    (Date.UTC(end.getFullYear(), end.getMonth(), end.getDate()) -
-      Date.UTC(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate())) /
-      86_400_000
-  );
-  if (days < 0) return { label: `${endDate}`, tone: "default" };
-  if (days === 0) return { label: "오늘 종료", tone: "danger" };
-  if (days <= 3) return { label: `D-${days} (${endDate})`, tone: "danger" };
-  if (days <= 7) return { label: `D-${days}`, tone: "warn" };
-  return { label: endDate, tone: "default" };
+} {
+  if (!start && !end) return { label: "—", tone: "default" };
+  if (start && end) {
+    const endD = new Date(end);
+    const days = Math.floor(
+      (Date.UTC(endD.getFullYear(), endD.getMonth(), endD.getDate()) -
+        Date.UTC(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate())) /
+        86_400_000
+    );
+    if (days >= 0 && days <= 3) {
+      return { label: `${start} ~ ${end} (D-${days})`, tone: "danger" };
+    }
+    if (days >= 0 && days <= 7) {
+      return { label: `${start} ~ ${end} (D-${days})`, tone: "warn" };
+    }
+    return { label: `${start} ~ ${end}`, tone: "default" };
+  }
+  return { label: end ?? start ?? "—", tone: "default" };
 }
 
-function timeAgo(iso: string): string {
-  const diff = TODAY.getTime() - new Date(iso).getTime();
-  const days = Math.floor(diff / 86_400_000);
-  if (days < 1) return "오늘";
-  if (days < 7) return `${days}일 전`;
-  if (days < 30) return `${Math.floor(days / 7)}주 전`;
-  return iso.slice(0, 10);
+function costLabel(cost: number | null): string {
+  if (cost == null || cost === 0) return "—";
+  if (cost >= 10000) {
+    const man = cost / 10000;
+    return `${man % 1 === 0 ? man : man.toFixed(1)}만`;
+  }
+  return cost.toLocaleString("ko-KR");
 }
 
 /**
@@ -58,14 +63,14 @@ export function MediaTable({
 
   return (
     <div className="overflow-x-auto rounded-lg border border-[var(--color-border)] bg-white">
-      <table className="w-full min-w-[720px] table-fixed text-sm">
+      <table className="w-full min-w-[640px] table-fixed text-sm">
         <colgroup>
-          <col style={{ width: 80 }} />
+          <col style={{ width: 64 }} />
           <col />
-          <col style={{ width: 110 }} />
-          <col style={{ width: 110 }} />
-          <col style={{ width: 130 }} />
-          <col style={{ width: 100 }} />
+          <col style={{ width: 88 }} />
+          <col style={{ width: 96 }} />
+          <col style={{ width: 200 }} />
+          <col style={{ width: 80 }} />
         </colgroup>
         <thead className="border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-left text-[11px] uppercase tracking-wide text-[var(--color-text-tertiary)]">
           <tr>
@@ -73,15 +78,15 @@ export function MediaTable({
             <th className="px-3 py-2 font-medium">매체 / 위치</th>
             <th className="px-3 py-2 font-medium">상태</th>
             <th className="px-3 py-2 font-medium">종류</th>
-            <th className="px-3 py-2 font-medium">종료</th>
-            <th className="px-3 py-2 text-right font-medium">업데이트</th>
+            <th className="px-3 py-2 font-medium">기간</th>
+            <th className="px-3 py-2 text-right font-medium">비용</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[var(--color-border)]">
           {records.map((r) => {
             const photo = r.photos?.[0];
             const label = r.description?.trim() || r.media_type;
-            const dday = dDayLabel(r.end_date);
+            const period = periodLabel(r.start_date, r.end_date);
             const history = historyCounts?.get(r.location_key) ?? 1;
 
             return (
@@ -99,10 +104,10 @@ export function MediaTable({
                       <img
                         src={photo}
                         alt=""
-                        className="h-10 w-14 rounded object-cover"
+                        className="h-10 w-12 rounded object-cover"
                       />
                     ) : (
-                      <div className="flex h-10 w-14 items-center justify-center rounded bg-[var(--color-bg-secondary)] text-[10px] text-[var(--color-text-tertiary)]">
+                      <div className="flex h-10 w-12 items-center justify-center rounded bg-[var(--color-bg-secondary)] text-[10px] text-[var(--color-text-tertiary)]">
                         없음
                       </div>
                     )}
@@ -111,12 +116,13 @@ export function MediaTable({
                 <td className="px-3 py-2 align-middle">
                   <Link
                     href={`/branches/${branchSlug}/records/${r.id}/edit`}
-                    className="font-medium text-[var(--color-text-primary)] hover:underline"
+                    className="block truncate font-medium text-[var(--color-text-primary)] hover:underline"
+                    title={label}
                   >
                     {label}
                   </Link>
                   {history > 1 ? (
-                    <span className="ml-2 rounded-full bg-[var(--color-bg-secondary)] px-1.5 text-[10px] text-[var(--color-text-tertiary)]">
+                    <span className="mt-0.5 inline-block rounded-full bg-[var(--color-bg-secondary)] px-1.5 text-[10px] text-[var(--color-text-tertiary)]">
                       히스토리 {history}
                     </span>
                   ) : null}
@@ -124,28 +130,24 @@ export function MediaTable({
                 <td className="px-3 py-2 align-middle">
                   <StatusBadge status={r.status} />
                 </td>
-                <td className="px-3 py-2 align-middle text-[var(--color-text-secondary)]">
+                <td className="truncate px-3 py-2 align-middle text-[var(--color-text-secondary)]">
                   {r.media_type}
                 </td>
-                <td className="px-3 py-2 align-middle">
-                  {dday ? (
-                    <span
-                      className={
-                        dday.tone === "danger"
-                          ? "font-medium text-[#C4332F]"
-                          : dday.tone === "warn"
-                            ? "font-medium text-[#9F6B53]"
-                            : "text-[var(--color-text-tertiary)]"
-                      }
-                    >
-                      {dday.label}
-                    </span>
-                  ) : (
-                    <span className="text-[var(--color-text-tertiary)]">—</span>
-                  )}
+                <td className="whitespace-nowrap px-3 py-2 align-middle">
+                  <span
+                    className={
+                      period.tone === "danger"
+                        ? "font-medium text-[#C4332F]"
+                        : period.tone === "warn"
+                          ? "font-medium text-[#9F6B53]"
+                          : "text-[var(--color-text-secondary)]"
+                    }
+                  >
+                    {period.label}
+                  </span>
                 </td>
-                <td className="px-3 py-2 text-right align-middle text-[var(--color-text-tertiary)]">
-                  {timeAgo(r.updated_at)}
+                <td className="whitespace-nowrap px-3 py-2 text-right align-middle tabular-nums text-[var(--color-text-secondary)]">
+                  {costLabel(r.cost)}
                 </td>
               </tr>
             );

@@ -8,11 +8,7 @@ export default function ScoringGuidePage() {
   return (
     <div className="space-y-8">
       <header>
-        <p className="text-xs uppercase tracking-wider text-[var(--color-text-tertiary)]">
-          가이드
-        </p>
-        <h1 className="text-[20px] font-semibold">점수 룰</h1>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+        <p className="text-sm text-[var(--color-text-secondary)]">
           데일리 할 일을 처리하면 점수가 쌓이고, 7일 미처리 시 차감돼요.
         </p>
       </header>
@@ -148,8 +144,8 @@ export default function ScoringGuidePage() {
           </Faq>
           <Faq q="점수는 어디서 볼 수 있나요?">
             지점 페이지의 &ldquo;이번 달 점수&rdquo; 섹션에서 누적 점수를 볼 수
-            있고, 홈의 &ldquo;Top 3&rdquo; 와 점수판 페이지에서 전체 지점 랭킹을
-            볼 수 있어요.
+            있고, 홈의 &ldquo;Top 3&rdquo; 섹션과 어드민에서 전체 랭킹을
+            확인할 수 있어요.
           </Faq>
         </div>
       </Section>

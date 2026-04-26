@@ -1,4 +1,5 @@
 import type { MediaStatus, MediaCategory } from "@/types";
+import { MEDIA_CATEGORY_LABEL } from "@/types";
 
 const STATUS_STYLE: Record<MediaStatus, { bg: string; fg: string }> = {
   게시중: { bg: "var(--badge-posting-bg)", fg: "var(--badge-posting-fg)" },
@@ -29,7 +30,6 @@ const CATEGORY_STYLE: Record<MediaCategory, { bg: string; fg: string }> = {
     bg: "var(--cat-distribution-bg)",
     fg: "var(--cat-distribution-fg)",
   },
-  "O-OOH": { bg: "var(--cat-owned-bg)", fg: "var(--cat-owned-fg)" },
 };
 
 export function StatusBadge({ status }: { status: MediaStatus }) {
@@ -45,7 +45,7 @@ export function CategoryBadge({ category }: { category: MediaCategory }) {
   const { bg, fg } = CATEGORY_STYLE[category];
   return (
     <span className="status-badge" style={{ backgroundColor: bg, color: fg }}>
-      {category}
+      {MEDIA_CATEGORY_LABEL[category]}
     </span>
   );
 }
