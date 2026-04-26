@@ -33,7 +33,7 @@ const TASK_SCORE_RULE: Record<DailyTaskType, { complete: number; expire: number 
 export function DailyTaskCard({ branchSlug, tasks: initial, todayIso }: Props) {
   const [tasks, setTasks] = useState<DailyTaskWithRecord[]>(initial);
   const [openTooltip, setOpenTooltip] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const [pendingId, setPendingId] = useState<string | null>(null);
 
   const today = todayIso ? new Date(todayIso) : new Date();
@@ -276,17 +276,6 @@ export function DailyTaskCard({ branchSlug, tasks: initial, todayIso }: Props) {
           })}
         </ul>
 
-        <div className="flex items-center justify-between border-t border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[11px] text-[var(--color-text-tertiary)]">
-          <span>
-            {pending ? "처리 중..." : "액션 시 자동 완료. 모호한 항목만 체크해주세요."}
-          </span>
-          <a
-            href="/guide/scoring"
-            className="text-[var(--color-text-secondary)] underline"
-          >
-            점수 룰 자세히
-          </a>
-        </div>
       </div>
     </section>
   );
