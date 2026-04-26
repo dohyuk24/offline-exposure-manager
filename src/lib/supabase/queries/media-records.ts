@@ -1,7 +1,7 @@
 import { unstable_cache } from "next/cache";
 
 import type { MediaRecord } from "@/types";
-import { createServerSupabase } from "@/lib/supabase/client";
+import { createAnonSupabase, createServerSupabase } from "@/lib/supabase/client";
 
 /** media 변경 시 invalidate. 매체 등록/수정/삭제 actions 에서 revalidateTag(MEDIA_CACHE_TAG). */
 export const MEDIA_CACHE_TAG = "media";
@@ -57,7 +57,7 @@ export const getDiscoveryFeed = unstable_cache(
     yearMonth: string,
     limit = 5
   ): Promise<{ items: DiscoveryFeedItem[]; totalCount: number }> => {
-    const supabase = await createServerSupabase();
+    const supabase = createAnonSupabase();
     const { data, error, count } = await supabase
       .from("media_records")
       .select(

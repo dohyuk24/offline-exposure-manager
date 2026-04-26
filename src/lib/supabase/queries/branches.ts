@@ -1,14 +1,14 @@
 import { unstable_cache } from "next/cache";
 
 import type { Branch } from "@/types";
-import { createServerSupabase } from "@/lib/supabase/client";
+import { createAnonSupabase, createServerSupabase } from "@/lib/supabase/client";
 
 /** branches 테이블 캐시 — admin 수정 시 revalidateTag("branches") */
 export const BRANCHES_CACHE_TAG = "branches";
 
 export const getBranchBySlug = unstable_cache(
   async (slug: string): Promise<Branch | null> => {
-    const supabase = await createServerSupabase();
+    const supabase = createAnonSupabase();
     const { data, error } = await supabase
       .from("branches")
       .select("*")
@@ -24,7 +24,7 @@ export const getBranchBySlug = unstable_cache(
 
 export const listActiveBranches = unstable_cache(
   async (): Promise<Branch[]> => {
-    const supabase = await createServerSupabase();
+    const supabase = createAnonSupabase();
     const { data, error } = await supabase
       .from("branches")
       .select("*")

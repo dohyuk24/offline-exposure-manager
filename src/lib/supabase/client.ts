@@ -26,6 +26,24 @@ export function createBrowserSupabase(): SupabaseClient {
 }
 
 /**
+ * cookies() 의존이 없는 익명 서버 클라이언트.
+ *
+ * unstable_cache() 내부에서는 cookies() / headers() 등 dynamic data source 를
+ * 못 쓰기 때문에, 캐시 가능한 read 쿼리(branches, public feed) 전용.
+ *
+ * RLS 가 꺼진 상태에서 anon key 로 read-only 사용. 쓰기는 createServerSupabase 사용.
+ */
+export function createAnonSupabase(): SupabaseClient {
+  const { url, anonKey } = readEnv();
+  return createServerClient(url, anonKey, {
+    cookies: {
+      getAll: () => [],
+      setAll: () => {},
+    },
+  });
+}
+
+/**
  * 서버 전용 클라이언트 — Server Component · Route Handler · Server Action에서만 사용.
  * next/headers 의존 때문에 런타임 import 로 가드한다.
  */
