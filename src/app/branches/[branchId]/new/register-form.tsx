@@ -74,7 +74,6 @@ export function RegisterForm({
       errorMessage={errorMessage}
       initialValues={initialValues}
       submitLabel={isContinuation ? "이어서 기록하기" : "등록하기"}
-      hideDiscoveryToggle={isContinuation}
     />
   );
 }

@@ -51,8 +51,6 @@ type MediaFormProps = {
   errorMessage?: string | null;
   initialValues?: Partial<MediaFormValues>;
   submitLabel?: string;
-  /** 기존 히스토리 이어서 기록 모드 — 신규 발굴 체크박스 숨김 */
-  hideDiscoveryToggle?: boolean;
   /** 사진 업로드 시 Storage path prefix 로 사용 (지점 slug) */
   branchSlug: string;
 };
@@ -66,7 +64,6 @@ export function MediaForm({
   errorMessage,
   initialValues,
   submitLabel = "등록하기",
-  hideDiscoveryToggle = false,
   branchSlug,
 }: MediaFormProps) {
   const [values, setValues] = useState<MediaFormValues>({
@@ -179,23 +176,6 @@ export function MediaForm({
           />
         </Row>
       ) : null}
-
-      {hideDiscoveryToggle ? null : (
-        <label className="flex items-center gap-2 rounded-md border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-3 text-sm">
-          <input
-            type="checkbox"
-            checked={values.is_new_discovery}
-            onChange={(e) => update("is_new_discovery", e.target.checked)}
-            className="h-4 w-4"
-          />
-          <span>
-            <span className="font-medium">✨ 신규 발굴</span>
-            <span className="ml-2 text-[var(--color-text-tertiary)]">
-              새 위치·채널에서 처음 확보한 매체
-            </span>
-          </span>
-        </label>
-      )}
 
       {errorMessage ? (
         <p className="rounded-md border border-[#C4332F]/40 bg-[#FFE2DD]/40 px-3 py-2 text-sm text-[#C4332F]">
