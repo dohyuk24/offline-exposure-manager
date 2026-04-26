@@ -33,8 +33,8 @@ function tabTitle(value: CategoryTabValue): string | undefined {
  */
 export function CategorySubTabs({ branchSlug, active, counts }: Props) {
   return (
-    <nav className="overflow-x-auto">
-      <ul className="flex min-w-max gap-1">
+    <nav>
+      <ul className="flex flex-wrap gap-1">
         {TABS.map((tab) => {
           const isActive = tab.value === active;
           const count =
