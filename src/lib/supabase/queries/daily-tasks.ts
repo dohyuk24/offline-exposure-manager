@@ -130,8 +130,8 @@ export type BranchTodoOverview = {
   branch_id: string;
   thisWeek: { done: number; total: number };
   last30: { done: number; open: number; expired: number; total: number };
-  /** 최근 7일 (오늘 제외 X — 오늘 포함). 각 날짜별 done/total. 가장 최근이 마지막 인덱스. */
-  trend7: { date: string; done: number; total: number }[];
+  /** 이번 주 월~금 (5일). 각 날짜별 done/total. 월요일이 첫 인덱스. */
+  trendWeekdays: { date: string; done: number; total: number }[];
 };
 
 export async function getTodoOverview(
@@ -156,11 +156,11 @@ export async function getTodoOverview(
   thisWeekStart.setHours(0, 0, 0, 0);
   const thisWeekStartIso = thisWeekStart.toISOString().slice(0, 10);
 
-  // 7일 trend 날짜 배열 (가장 오래 → 최근)
+  // 이번 주 월~금 (5일) trend 날짜 배열
   const trendDates: string[] = [];
-  for (let i = 6; i >= 0; i -= 1) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
+  for (let i = 0; i < 5; i += 1) {
+    const d = new Date(thisWeekStart);
+    d.setDate(thisWeekStart.getDate() + i);
     trendDates.push(d.toISOString().slice(0, 10));
   }
 
@@ -179,7 +179,11 @@ export async function getTodoOverview(
         branch_id: r.branch_id,
         thisWeek: { done: 0, total: 0 },
         last30: { done: 0, open: 0, expired: 0, total: 0 },
-        trend7: trendDates.map((d) => ({ date: d, done: 0, total: 0 })),
+        trendWeekdays: trendDates.map((d) => ({
+          date: d,
+          done: 0,
+          total: 0,
+        })),
       };
       map.set(r.branch_id, entry);
     }
@@ -194,7 +198,9 @@ export async function getTodoOverview(
       if (r.status === "done") entry.thisWeek.done += 1;
     }
 
-    const trendCell = entry.trend7.find((t) => t.date === r.generated_for);
+    const trendCell = entry.trendWeekdays.find(
+      (t) => t.date === r.generated_for
+    );
     if (trendCell) {
       trendCell.total += 1;
       if (r.status === "done") trendCell.done += 1;

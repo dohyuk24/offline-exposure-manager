@@ -16,6 +16,8 @@ export async function manualCompleteTaskAction(
   try {
     await manualCompleteTask(taskId);
     revalidatePath(`/branches/${branchSlug}`);
+    revalidatePath("/todo");
+    revalidatePath("/");
     return { ok: true };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

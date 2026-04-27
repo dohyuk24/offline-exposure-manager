@@ -103,7 +103,7 @@ function Header() {
       </p>
       <h1 className="text-[22px] font-semibold">지점별 데일리 task 처리 현황</h1>
       <p className="text-sm text-[var(--color-text-secondary)]">
-        이번 주 진행률 · 최근 7일 추세 · 30일 누적
+        이번 주 진행률 · 월~금 추세 · 30일 누적
       </p>
     </header>
   );
@@ -152,7 +152,7 @@ function BranchCard({
 }) {
   const thisWeek = overview?.thisWeek ?? { done: 0, total: 0 };
   const last30 = overview?.last30 ?? { done: 0, open: 0, expired: 0, total: 0 };
-  const trend = overview?.trend7 ?? [];
+  const trend = overview?.trendWeekdays ?? [];
   const weekPct =
     thisWeek.total > 0
       ? Math.round((thisWeek.done / thisWeek.total) * 100)
@@ -198,7 +198,7 @@ function BranchCard({
 
       <div className="mt-3">
         <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--color-text-tertiary)]">
-          최근 7일 추세
+          이번 주 월~금
         </p>
         <div className="flex items-end gap-1">
           {trend.map((cell) => {
