@@ -86,21 +86,39 @@ export function DailyTaskCard({ branchSlug, tasks: initial, todayIso }: Props) {
     });
   }
 
+  // 자동 생성된 task 가 0건이어도 "오늘은 할 일 없음"으로 비워두지 않고
+  // 가장 자주 해야 하는 활동을 추천 카드로 노출.
   if (total === 0) {
     return (
       <section className="space-y-3">
-        <h2 className="text-[15px] font-medium">오늘의 할 일</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-[15px] font-medium">오늘의 할 일</h2>
+          <span className="text-xs text-[var(--color-text-tertiary)]">
+            {dateLabel}
+          </span>
+        </div>
         <div
-          className="rounded-xl border border-[var(--color-border)] bg-white p-6 text-center"
+          className="rounded-xl border border-[var(--color-border)] bg-white p-4"
           style={{ borderLeft: "4px solid #10b981" }}
         >
-          <p className="text-2xl">☀️</p>
-          <p className="mt-2 text-[15px] font-semibold text-[var(--color-text-primary)]">
-            오늘은 할 일이 없어요
-          </p>
-          <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
-            여유 있는 날이에요. 상권 한 번 둘러볼까요?
-          </p>
+          <div className="flex items-start gap-3">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[var(--color-bg-secondary)]">
+              💡
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-[14px] font-medium text-[var(--color-text-primary)]">
+                  매체 지면 한 번 확인해보고, 변화 있으면 사진 업데이트해주세요!
+                </span>
+                <span className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-1.5 py-0.5 text-[10px] text-[var(--color-text-tertiary)]">
+                  추천
+                </span>
+              </div>
+              <p className="mt-1 text-[12px] text-[var(--color-text-secondary)]">
+                급한 일은 없지만, 지면 한 바퀴 도는 건 늘 좋은 습관이에요.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
     );
