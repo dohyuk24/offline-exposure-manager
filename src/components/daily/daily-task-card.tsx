@@ -16,15 +16,15 @@ type Props = {
 
 const TASK_TITLE: Record<DailyTaskType, string> = {
   unofficial_update:
-    "마지막 업데이트가 7일 지난 매체가 있어요. 오늘 바로 업데이트해볼까요?",
+    "마지막 업데이트가 7일 지난 매체가 있어요. 오늘 한 장 새로 찍어 올려주세요!",
   posting_ending:
     "곧 게시가 끝나는 매체가 있네요. 연장이나 정리 한 번 살펴볼까요?",
   negotiating_followup:
     "아직 협의중인 매체가 있네요! 진행상황을 체크해볼까요?",
   discovery_zero:
-    "이번 달 신규 발굴이 아직 없어요. 상권 한 번 둘러볼까요?",
+    "이번 달 신규 발굴이 아직 없어요. 상권 둘러보고 후보를 찾아주세요!",
   barter_progress:
-    "진행중인 제휴 건이 있네요. 다음 액션 정리해볼까요?",
+    "진행중인 제휴 건이 있어요. 다음 액션을 정리해두세요.",
 };
 
 const TASK_SCORE_RULE: Record<DailyTaskType, { complete: number; expire: number }> = {
