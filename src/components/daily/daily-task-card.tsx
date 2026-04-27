@@ -332,7 +332,7 @@ function RecommendationCard({
                     : "text-[var(--color-text-primary)]"
                 }`}
               >
-                매체 지면 한 바퀴 돌아주세요!
+                매체 지면 업데이트 하기!
               </span>
               <span className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-1.5 py-0.5 text-[10px] text-[var(--color-text-tertiary)]">
                 추천
