@@ -108,14 +108,14 @@ export function DailyTaskCard({ branchSlug, tasks: initial, todayIso }: Props) {
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className="text-[14px] font-medium text-[var(--color-text-primary)]">
-                  매체 지면 한 번 확인해보고, 변화 있으면 사진 업데이트해주세요!
+                  매체 지면 한 바퀴 돌아주세요!
                 </span>
                 <span className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-1.5 py-0.5 text-[10px] text-[var(--color-text-tertiary)]">
                   추천
                 </span>
               </div>
               <p className="mt-1 text-[12px] text-[var(--color-text-secondary)]">
-                급한 일은 없지만, 지면 한 바퀴 도는 건 늘 좋은 습관이에요.
+                변경된 곳은 사진도 함께 업데이트!
               </p>
             </div>
           </div>
