@@ -10,7 +10,7 @@ import { formatError } from "@/lib/format-error";
 import { OFFICE_BRANCH_SLUG, sortBranchesByDisplayOrder } from "@/lib/branch-order";
 import type { Branch } from "@/types";
 
-const DAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
+const WEEKDAY_LABELS = ["월", "화", "수", "목", "금"];
 
 export default async function TodoPage() {
   let branches: Branch[] = [];
@@ -201,7 +201,7 @@ function BranchCard({
           이번 주 월~금
         </p>
         <div className="flex items-end gap-1">
-          {trend.map((cell) => {
+          {trend.map((cell, idx) => {
             const pct =
               cell.total === 0 ? 0 : (cell.done / cell.total) * 100;
             const cellColor =
@@ -212,8 +212,9 @@ function BranchCard({
                   : pct >= 50
                     ? "#D97706"
                     : "#C4332F";
-            const dayLabel =
-              DAY_LABELS[new Date(cell.date).getDay()];
+            // 서버에서 월~금 순서로 5개 날짜를 만들어서 보내주므로,
+            // 위치 기반(idx) 으로 라벨링 — 타임존 영향 안 받음.
+            const dayLabel = WEEKDAY_LABELS[idx];
             return (
               <div
                 key={cell.date}

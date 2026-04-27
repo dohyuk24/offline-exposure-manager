@@ -148,19 +148,21 @@ export async function getTodoOverview(
     .gte("generated_for", sinceIso);
   if (error) throw error;
 
-  // this week: 월요일 기준
-  const dayOfWeek = today.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+  // KST 기준 '이번 주 월요일'. 서버는 UTC 라 9시간 보정해 KST 날짜를 계산.
+  const KST_OFFSET = 9 * 60 * 60 * 1000;
+  const todayKst = new Date(today.getTime() + KST_OFFSET);
+  const dayOfWeek = todayKst.getUTCDay(); // 0=Sun, 1=Mon, ..., 6=Sat (KST 기준)
   const daysFromMon = (dayOfWeek + 6) % 7;
-  const thisWeekStart = new Date(today);
-  thisWeekStart.setDate(today.getDate() - daysFromMon);
-  thisWeekStart.setHours(0, 0, 0, 0);
+  const thisWeekStart = new Date(todayKst);
+  thisWeekStart.setUTCDate(todayKst.getUTCDate() - daysFromMon);
+  thisWeekStart.setUTCHours(0, 0, 0, 0);
   const thisWeekStartIso = thisWeekStart.toISOString().slice(0, 10);
 
-  // 이번 주 월~금 (5일) trend 날짜 배열
+  // 이번 주 월~금 (5일, KST). 인덱스 0=월, 4=금.
   const trendDates: string[] = [];
   for (let i = 0; i < 5; i += 1) {
     const d = new Date(thisWeekStart);
-    d.setDate(thisWeekStart.getDate() + i);
+    d.setUTCDate(thisWeekStart.getUTCDate() + i);
     trendDates.push(d.toISOString().slice(0, 10));
   }
 
