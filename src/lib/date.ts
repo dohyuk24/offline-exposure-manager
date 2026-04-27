@@ -8,12 +8,20 @@ export function currentYearMonth(now: Date = new Date()): string {
   return `${year}-${month}`;
 }
 
-/** 'YYYY-MM-DD' 문자열. daily_tasks.generated_for/expires_at 포맷. */
+/**
+ * 'YYYY-MM-DD' 문자열 (KST 기준). daily_tasks.generated_for/expires_at 포맷.
+ *
+ * cron 이 03:00 KST = 18:00 UTC 에 도는데 서버가 UTC 라
+ * 로컬 필드를 그대로 쓰면 '하루 전 UTC 날짜' 가 저장되는 문제가 있어
+ * 항상 KST 기준 날짜로 직렬화한다.
+ */
 export function formatYmd(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${dd}`;
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
 }
 
 /** 날짜에 N일을 더한 새 Date. */

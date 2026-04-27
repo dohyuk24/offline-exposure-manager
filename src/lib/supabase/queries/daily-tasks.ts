@@ -138,8 +138,14 @@ export async function getTodoOverview(
   today: Date
 ): Promise<Map<string, BranchTodoOverview>> {
   const supabase = await createServerSupabase();
-  const since = new Date(today);
-  since.setDate(since.getDate() - 30);
+
+  // KST 기준 날짜 계산. 서버가 UTC 라 9시간 보정해 KST 날짜로 변환.
+  const KST_OFFSET = 9 * 60 * 60 * 1000;
+  const todayKst = new Date(today.getTime() + KST_OFFSET);
+
+  const since = new Date(todayKst);
+  since.setUTCDate(todayKst.getUTCDate() - 30);
+  since.setUTCHours(0, 0, 0, 0);
   const sinceIso = since.toISOString().slice(0, 10);
 
   const { data, error } = await supabase
@@ -148,9 +154,7 @@ export async function getTodoOverview(
     .gte("generated_for", sinceIso);
   if (error) throw error;
 
-  // KST 기준 '이번 주 월요일'. 서버는 UTC 라 9시간 보정해 KST 날짜를 계산.
-  const KST_OFFSET = 9 * 60 * 60 * 1000;
-  const todayKst = new Date(today.getTime() + KST_OFFSET);
+  // KST '이번 주 월요일' ~ '금요일' 5일.
   const dayOfWeek = todayKst.getUTCDay(); // 0=Sun, 1=Mon, ..., 6=Sat (KST 기준)
   const daysFromMon = (dayOfWeek + 6) % 7;
   const thisWeekStart = new Date(todayKst);
@@ -158,7 +162,6 @@ export async function getTodoOverview(
   thisWeekStart.setUTCHours(0, 0, 0, 0);
   const thisWeekStartIso = thisWeekStart.toISOString().slice(0, 10);
 
-  // 이번 주 월~금 (5일, KST). 인덱스 0=월, 4=금.
   const trendDates: string[] = [];
   for (let i = 0; i < 5; i += 1) {
     const d = new Date(thisWeekStart);
