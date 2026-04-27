@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import type { DailyTaskType } from "@/types";
 import { DAILY_TASK_TYPE, TASK_MANUAL_CHECK_ALLOWED } from "@/types";
@@ -90,37 +90,11 @@ export function DailyTaskCard({ branchSlug, tasks: initial, todayIso }: Props) {
   // 가장 자주 해야 하는 활동을 추천 카드로 노출.
   if (total === 0) {
     return (
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-[15px] font-medium">오늘의 할 일</h2>
-          <span className="text-xs text-[var(--color-text-tertiary)]">
-            {dateLabel}
-          </span>
-        </div>
-        <div
-          className="rounded-xl border border-[var(--color-border)] bg-white p-4"
-          style={{ borderLeft: "4px solid #10b981" }}
-        >
-          <div className="flex items-start gap-3">
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[var(--color-bg-secondary)]">
-              💡
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-[14px] font-medium text-[var(--color-text-primary)]">
-                  매체 지면 한 바퀴 돌아주세요!
-                </span>
-                <span className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-1.5 py-0.5 text-[10px] text-[var(--color-text-tertiary)]">
-                  추천
-                </span>
-              </div>
-              <p className="mt-1 text-[12px] text-[var(--color-text-secondary)]">
-                변경된 곳은 사진도 함께 업데이트!
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <RecommendationCard
+        branchSlug={branchSlug}
+        todayKey={`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`}
+        dateLabel={dateLabel}
+      />
     );
   }
 
@@ -285,6 +259,96 @@ export function DailyTaskCard({ branchSlug, tasks: initial, todayIso }: Props) {
           })}
         </ul>
 
+      </div>
+    </section>
+  );
+}
+
+/** task 0건일 때 노출되는 추천 카드. localStorage 로 오늘 날짜만 완료 상태 보존. */
+function RecommendationCard({
+  branchSlug,
+  todayKey,
+  dateLabel,
+}: {
+  branchSlug: string;
+  todayKey: string;
+  dateLabel: string;
+}) {
+  const storageKey = `daily-rec-done:${branchSlug}:${todayKey}`;
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    try {
+      setDone(window.localStorage.getItem(storageKey) === "1");
+    } catch {
+      // localStorage 비활성 환경 무시
+    }
+  }, [storageKey]);
+
+  function toggle() {
+    const next = !done;
+    setDone(next);
+    try {
+      if (next) window.localStorage.setItem(storageKey, "1");
+      else window.localStorage.removeItem(storageKey);
+    } catch {
+      // ignore
+    }
+  }
+
+  const borderColor = done ? "#10b981" : "#5b5fd6";
+
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="text-[15px] font-medium">오늘의 할 일</h2>
+        <span className="text-xs text-[var(--color-text-tertiary)]">
+          {dateLabel}
+        </span>
+      </div>
+      <div
+        className="rounded-xl border border-[var(--color-border)] bg-white p-4"
+        style={{ borderLeft: `4px solid ${borderColor}` }}
+      >
+        <div className="flex items-start gap-3">
+          <button
+            type="button"
+            onClick={toggle}
+            className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 text-sm transition-colors ${
+              done
+                ? "border-[#10b981] bg-[#10b981] text-white"
+                : "border-[var(--color-border)] bg-white hover:border-[var(--color-accent)]"
+            }`}
+            aria-label={done ? "완료됨" : "완료 처리"}
+          >
+            {done ? "✓" : ""}
+          </button>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span
+                className={`text-[14px] font-medium ${
+                  done
+                    ? "text-[var(--color-text-tertiary)] line-through"
+                    : "text-[var(--color-text-primary)]"
+                }`}
+              >
+                매체 지면 한 바퀴 돌아주세요!
+              </span>
+              <span className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-1.5 py-0.5 text-[10px] text-[var(--color-text-tertiary)]">
+                추천
+              </span>
+            </div>
+            <p
+              className={`mt-1 text-[12px] ${
+                done
+                  ? "text-[var(--color-text-tertiary)] line-through"
+                  : "text-[var(--color-text-secondary)]"
+              }`}
+            >
+              변경된 곳은 사진도 함께 업데이트!
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );
