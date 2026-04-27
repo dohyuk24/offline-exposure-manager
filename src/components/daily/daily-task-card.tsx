@@ -324,20 +324,15 @@ function RecommendationCard({
             {done ? "✓" : ""}
           </button>
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span
-                className={`text-[14px] font-medium ${
-                  done
-                    ? "text-[var(--color-text-tertiary)] line-through"
-                    : "text-[var(--color-text-primary)]"
-                }`}
-              >
-                매체 지면 업데이트 하기!
-              </span>
-              <span className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-1.5 py-0.5 text-[10px] text-[var(--color-text-tertiary)]">
-                추천
-              </span>
-            </div>
+            <span
+              className={`text-[14px] font-medium ${
+                done
+                  ? "text-[var(--color-text-tertiary)] line-through"
+                  : "text-[var(--color-text-primary)]"
+              }`}
+            >
+              매체 지면 업데이트 하기!
+            </span>
             <p
               className={`mt-1 text-[12px] ${
                 done
